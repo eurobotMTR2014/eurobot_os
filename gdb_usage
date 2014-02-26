@@ -1,0 +1,9 @@
+arm-none-eabi-gdb
+target extended-remote localhost:3333
+monitor reset
+monitor sleep 500
+monitor poll
+monitor soft_reset_halt
+b main
+load
+monitor soft_reset_halt
