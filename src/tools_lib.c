@@ -81,6 +81,13 @@ void servoCmdRAW(char ID, char instruction, char paramLength,
     servoRxBufferClrRAW(base);
 }
 
+void servoCmdParam(char ID, char instruction, char paramLength, char* servoParam)
+{
+    servoCmdRAW(ID, instruction, paramLength,
+                    FLAP_UART, FLAP_CMD_PIN_BASE, FLAP_CMD_PIN_NB,
+                    servoParam, flapBufferTx);
+}
+
 char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* bufferTx, char* bufferRx, unsigned long* rx_ms_wait)
 {
     char received = 0;
@@ -255,7 +262,7 @@ bool flapCheck(portTickType* xLastWakeTime)
     if (rval != SERVO_RECEIVED_OK)
     {
         retval = false;
-//        UARTprintf("Flap error: %d\n", rval);
+        UARTprintf("Flap error: %d\n", rval);
 
 //        errorReport("Flap proto error!");
     }
@@ -263,7 +270,7 @@ bool flapCheck(portTickType* xLastWakeTime)
     {
         retval = false;
 
-//        UARTprintf("Flap reception error: %d\n", flapRxStatus);
+        UARTprintf("Flap reception error: %d\n", flapRxStatus);
 
 //        errorReport("Flap ack error!");
     }
