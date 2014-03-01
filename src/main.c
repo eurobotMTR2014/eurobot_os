@@ -874,8 +874,8 @@ void servoBroadcast(void* pvParameters)
 
         // write in control table of servo through UART2
 
-        UARTDisable("Disable uart 2\n");
-        UARTEnable(UART2_BASE)
+        UARTprintf("Disable uart 2\n");
+        UARTDisable(UART2_BASE);
 
     }
 }
