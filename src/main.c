@@ -59,15 +59,17 @@ void testCandleTask(void* pvParameters);
 void testQEI(void* pvParameters);
 void testADC(void* pvParameters);
 
+void servoBroadcast(void* pvParameters);
+
 int main (void)
 {
     init();
     pln("Initialization over");
 
-    servoLaunchSequence();
-    flapLaunchSequence();
+    // servoLaunchSequence();
+    // flapLaunchSequence();
 
-    bootmenu();
+    // bootmenu();
 
     // Creating semaphores
     cpuCounterMutex = xSemaphoreCreateMutex();
@@ -85,16 +87,17 @@ int main (void)
 
     // Creating tasks
     xTaskCreate(idleTask, (signed char *) "idleTask", 40, NULL, (tskIDLE_PRIORITY), NULL);
-    xTaskCreate(idleStat, (signed char *) "idleStat", 100, NULL, (tskIDLE_PRIORITY+1), NULL);
+    //xTaskCreate(idleStat, (signed char *) "idleStat", 100, NULL, (tskIDLE_PRIORITY+1), NULL);
     xTaskCreate(blinky, (signed char *) "blinky", 40, NULL, (tskIDLE_PRIORITY + 2), NULL);
     xTaskCreate(launchOLED, (signed char *) "launchOLED", 100, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    xTaskCreate(servoBroadcast, (signed char *) "servoBroadcast", 100, NULL, (tskIDLE_PRIORITY + 3), NULL);
 
     //xTaskCreate(servoCmdLine, (signed char *) "servoCmdLine", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
 
-    xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
-    xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
-    xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
-    xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    //xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
+    //xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
+    //xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    //xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
 
     pln("Launching scheduler");
     vTaskStartScheduler();
@@ -844,6 +847,37 @@ void errorReport(char* msg)
 void batteryReport(unsigned long bVolt)
 {
     xQueueSend(batteryVoltQueue, (void*) &bVolt, 0);
+}
+
+void servoBroadcast(void* pvParameters)
+{
+
+    UARTprintf("Let's try to broadcast!!!\n");
+
+    const int NB_FREQ_AVAIL = 9,
+                avail_freq[NB_FREQ_AVAIL] = {9600, 19200, 57600, 
+                                             115200, 200000, 250000, 
+                                             400000, 500000, 1000000};
+    int i;
+
+    UARTDisable(UART2_BASE);
+
+    for(i = 0; i < NB_FREQ_AVAIL; i++)
+    {
+        UARTprintf("Set baud rate of uart 2 : %d\n", avail_freq[i]);
+
+        UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), avail_freq[i],
+                            (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
+        
+        UARTprintf("Enable uart 2\n");
+        UARTEnable(UART2_BASE);
+
+        // write in control table of servo through UART2
+
+        UARTDisable("Disable uart 2\n");
+        UARTEnable(UART2_BASE)
+
+    }
 }
 
 /**  End of main.c  **/
