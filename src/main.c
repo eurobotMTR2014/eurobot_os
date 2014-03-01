@@ -854,14 +854,30 @@ void servoBroadcast(void* pvParameters)
 
     UARTprintf("Let's try to broadcast!!!\n");
 
-    const int frequencies[] = {};
-    
+    const int NB_FREQ_AVAIL = 9,
+                avail_freq[NB_FREQ_AVAIL] = {9600, 19200, 57600, 
+                                             115200, 200000, 250000, 
+                                             400000, 500000, 1000000};
+    int i;
 
-    UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), 200000,
+    UARTDisable(UART2_BASE);
+
+    for(i = 0; i < NB_FREQ_AVAIL; i++)
+    {
+        UARTprintf("Set baud rate of uart 2 : %d\n", avail_freq[i]);
+
+        UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), avail_freq[i],
                             (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
+        
+        UARTprintf("Enable uart 2\n");
+        UARTEnable(UART2_BASE);
 
-    UARTEnable(UART2_BASE);
-    UARTFIFOEnable(UART2_BASE);
+        // write in control table of servo through UART2
+
+        UARTDisable("Disable uart 2\n");
+        UARTEnable(UART2_BASE)
+
+    }
 }
 
 /**  End of main.c  **/
