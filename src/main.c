@@ -855,29 +855,44 @@ void servoBroadcast(void* pvParameters)
     UARTprintf("Let's try to broadcast!!!\n");
 
     const int NB_FREQ_AVAIL = 9,
-                avail_freq[NB_FREQ_AVAIL] = {9600, 19200, 57600, 
-                                             115200, 200000, 250000, 
-                                             400000, 500000, 1000000};
-    int i;
+                avail_freq[NB_FREQ_AVAIL][2] = {{0xCF, 9600},
+                                                {0x67, 19200}, 
+                                                {0x22, 57600},
+                                                {0x10, 115200}, 
+                                                {0x09, 200000}, 
+                                                {0x07, 250000}
+                                                {0x04, 400000}, 
+                                                {0x03, 500000}, 
+                                                {0x01, 1000000}};
+    int i, servoParams[2];
+
+    servoParams[0] = 0x04; // baud rate servo register address
 
     UARTDisable(UART2_BASE);
 
     for(i = 0; i < NB_FREQ_AVAIL; i++)
     {
-        UARTprintf("Set baud rate of uart 2 : %d\n", avail_freq[i]);
+        UARTprintf("Set baud rate of uart 2 : %d\n", avail_freq[1][i]);
 
-        UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), avail_freq[i],
-                            (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
+        UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), avail_freq[1][i],
+                            (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE));
         
         UARTprintf("Enable uart 2\n");
         UARTEnable(UART2_BASE);
 
-        // write in control table of servo through UART2
+        servoParams = avail_freq[i][0]; // frequency code
 
-        UARTDisable("Disable uart 2\n");
-        UARTEnable(UART2_BASE)
+        servoCmdParam(SERVO_BROADCAST, INST_WRITE, 2, servoParams);
 
+        if(flapCheck(xLastWakeTime))
+        {
+            UARTprintf("Servo responds => freq is %d\n", available[i][1]);
+            break;
+        }
+        UARTprintf("Disable uart 2\n");
+        UARTDisable(UART2_BASE);
     }
+
 }
 
 /**  End of main.c  **/
