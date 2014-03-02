@@ -87,17 +87,17 @@ int main (void)
 
     // Creating tasks
     xTaskCreate(idleTask, (signed char *) "idleTask", 40, NULL, (tskIDLE_PRIORITY), NULL);
-    //xTaskCreate(idleStat, (signed char *) "idleStat", 100, NULL, (tskIDLE_PRIORITY+1), NULL);
+    xTaskCreate(idleStat, (signed char *) "idleStat", 100, NULL, (tskIDLE_PRIORITY+1), NULL);
     xTaskCreate(blinky, (signed char *) "blinky", 40, NULL, (tskIDLE_PRIORITY + 2), NULL);
     xTaskCreate(launchOLED, (signed char *) "launchOLED", 100, NULL, (tskIDLE_PRIORITY + 2), NULL);
-    xTaskCreate(servoBroadcast, (signed char *) "servoBroadcast", 100, NULL, (tskIDLE_PRIORITY + 3), NULL);
-
+    
+    //sxTaskCreate(servoBroadcast, (signed char *) "servoBroadcast", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
     //xTaskCreate(servoCmdLine, (signed char *) "servoCmdLine", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
 
-    //xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
-    //xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
-    //xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
-    //xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
+    xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
+    xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
 
     pln("Launching scheduler");
     vTaskStartScheduler();
@@ -849,49 +849,124 @@ void batteryReport(unsigned long bVolt)
     xQueueSend(batteryVoltQueue, (void*) &bVolt, 0);
 }
 
+#define NB_FREQ_AVAIL 9
+
+struct freq_avail 
+{ 
+    char id; 
+    int freq; 
+};
+                
 void servoBroadcast(void* pvParameters)
 {
+    portTickType xLastWakeTime;
+    xLastWakeTime = xTaskGetTickCount();
 
+    struct freq_avail avail_freq_array[NB_FREQ_AVAIL] = {{0xCF, 9600},
+                                                   {0x67, 19200}, 
+                                                   {0x22, 57600},
+                                                   {0x10, 115200}, 
+                                                   {0x09, 200000}, 
+                                                   {0x07, 250000},
+                                                   {0x04, 400000}, 
+                                                   {0x03, 500000}, 
+                                                   {0x01, 1000000}};
+
+    char buf[50];
     UARTprintf("Let's try to broadcast!!!\n");
+    UARTprintf("What do you want to do ?\n");
+    UARTprintf("1) set baud rate\n");
+    UARTprintf("2) ping at a certain frequency\n");
+    UARTprintf("Choice : ");
+    UARTgets(buf, 50);
+    int choice = m_atoc(buf);
 
-    const int NB_FREQ_AVAIL = 9,
-                avail_freq[NB_FREQ_AVAIL][2] = {{0xCF, 9600},
-                                                {0x67, 19200}, 
-                                                {0x22, 57600},
-                                                {0x10, 115200}, 
-                                                {0x09, 200000}, 
-                                                {0x07, 250000}
-                                                {0x04, 400000}, 
-                                                {0x03, 500000}, 
-                                                {0x01, 1000000}};
-    int i, servoParams[2];
-
-    servoParams[0] = 0x04; // baud rate servo register address
-
-    UARTDisable(UART2_BASE);
-
-    for(i = 0; i < NB_FREQ_AVAIL; i++)
+    switch(choice)
     {
-        UARTprintf("Set baud rate of uart 2 : %d\n", avail_freq[1][i]);
-
-        UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), avail_freq[1][i],
-                            (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE));
-        
-        UARTprintf("Enable uart 2\n");
-        UARTEnable(UART2_BASE);
-
-        servoParams = avail_freq[i][0]; // frequency code
-
-        servoCmdParam(SERVO_BROADCAST, INST_WRITE, 2, servoParams);
-
-        if(flapCheck(xLastWakeTime))
+        case 1 :
         {
-            UARTprintf("Servo responds => freq is %d\n", available[i][1]);
+            
+            int i;
+            char servoParams[2];
+
+            servoParams[0] = 0x04; // baud rate servo register address
+
+            UARTDisable(UART2_BASE);
+
+            for(i = 0; i < NB_FREQ_AVAIL; i++)
+            {
+                UARTprintf("Set baud rate of uart UART2 : %d\n", avail_freq_array[i].freq);
+
+                // set uart frequency
+                UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), avail_freq_array[i].freq,
+                                    (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE));
+                
+                unsigned long baud_rate, config;
+                UARTConfigGetExpClk(UART2_BASE, SysCtlClockGet(), &baud_rate, &config);
+
+                UARTprintf("Check baud rate of UART2 : %x (%d)\n", baud_rate, baud_rate);
+                UARTprintf("Enable UART2\n\n");
+                UARTEnable(UART2_BASE);
+
+                servoParams[1] = avail_freq_array[i].id; // frequency code
+
+                // write baud rate on all servos
+                servoCmdParam(SERVO_BROADCAST, INST_WRITE, 2, servoParams);
+                servoSync();
+
+                if(flapCheck(&xLastWakeTime))
+                {
+                    UARTprintf("Servo RESPONDS => freq is %d\n", avail_freq_array[i].freq);
+                    break;
+                }
+
+                UARTprintf("\nDisable UART2\n");
+                UARTDisable(UART2_BASE);
+            }
             break;
         }
-        UARTprintf("Disable uart 2\n");
-        UARTDisable(UART2_BASE);
+        case 2 :
+        {
+            int i;
+
+            UARTDisable(UART2_BASE);
+
+            for(i = 0; i < NB_FREQ_AVAIL; i++)
+            {
+                UARTprintf("Set baud rate of uart UART2 : %d\n", avail_freq_array[i].freq);
+
+                // set uart frequency
+                UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), avail_freq_array[i].freq,
+                                    (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE));
+                
+                unsigned long baud_rate, config;
+
+                UARTConfigGetExpClk(UART2_BASE, SysCtlClockGet(), &baud_rate, &config);
+
+                UARTprintf("Check baud rate of UART2 : %x (%d)\n", baud_rate, baud_rate);
+                UARTprintf("Enable UART2\n\n");
+
+                UARTEnable(UART2_BASE);
+
+                UARTprintf("Listen to servo (through UART2)\n");
+                // write baud rate on all servos
+                flapCmd(SERVO_BROADCAST, INST_PING, 0, &xLastWakeTime);
+
+                UARTprintf("Answer : %d\n", flapListen(&xLastWakeTime));
+
+                UARTprintf("\nDisable UART2\n");
+                UARTDisable(UART2_BASE);
+            }
+            break;
+        }
+        default:
+        {
+            UARTprintf("Mauvais choix\n");
+        }
     }
+    
+
+
 
 }
 

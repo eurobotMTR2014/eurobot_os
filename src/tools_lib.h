@@ -105,8 +105,6 @@ void servoLeft(portTickType* xLastWakeTime, char upval, char downval);
 void servoRight(portTickType* xLastWakeTime, char upval, char downval);
 void servoSync();
 
-
-
 /// Captors
 #define ULTRAS_VCC 5
 float ultrason_convert(unsigned long value);
