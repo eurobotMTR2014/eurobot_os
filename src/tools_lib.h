@@ -53,6 +53,16 @@
 void servoCmdRAW(char ID, char instruction, char paramLength,
                   unsigned long base, unsigned long ctrl_pin_base, unsigned long ctrl_pin_nb,
                   char* servoParam, char* servoBufferTx);
+
+/*
+ * Send instruction to a servo
+ * @param ID id of the servo
+ * @param instruction instruction code
+ * @param paramLength nb_parameters
+ * @param servoParam array containing the parameters of the instruction
+ */
+void servoCmdParam(char ID, char instruction, char paramLength, char* servoParam);
+
 char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* bufferTx, char* bufferRx, unsigned long* rx_ms_wait);
 
 void servoCmd(char ID, char instruction, char paramLength);
@@ -94,8 +104,6 @@ void flapRightBall(portTickType* xLastWakeTime);
 void servoLeft(portTickType* xLastWakeTime, char upval, char downval);
 void servoRight(portTickType* xLastWakeTime, char upval, char downval);
 void servoSync();
-
-
 
 /// Captors
 #define ULTRAS_VCC 5

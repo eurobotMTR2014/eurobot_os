@@ -106,7 +106,7 @@ void pln(char* msg)
 
 void pln2(char* msg)
 {
-//    pln(msg);
+    pln(msg);
 //    errorReport(msg);
 }
 

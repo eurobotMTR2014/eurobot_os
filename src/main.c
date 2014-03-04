@@ -853,24 +853,7 @@ void batteryReport(unsigned long bVolt)
 
 struct freq_avail 
 { 
-    char id;                                       {0x09, 200000}, 
-                                                   {0x07, 250000},
-                                                   {0x04, 400000}, 
-                                                   {0x03, 500000}, 
-                                                   {0x01, 1000000}};
-
-    char buf[50];
-    UARTprintf("Let's try to broadcast!!!\n");
-    UARTprintf("What do you want to do ?\n");
-    UARTprintf("1) set baud rate\n");
-    UARTprintf("2) ping at a certain frequency\n");
-    UARTprintf("Choice : ");
-    UARTgets(buf, 50);
-    int choice = m_atoc(buf);
-
-    switch(choice)
-    {
-        case 
+    char id; 
     int freq; 
 };
                 
@@ -981,6 +964,11 @@ void servoBroadcast(void* pvParameters)
             UARTprintf("Mauvais choix\n");
         }
     }
+    
+
+
+
 }
 
 /**  End of main.c  **/
+
