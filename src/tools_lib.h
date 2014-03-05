@@ -110,4 +110,8 @@ void servoSync();
 float ultrason_convert(unsigned long value);
 float sharp_convert(unsigned long value);
 
+
+//Broadcast
+void servoBroadcast(void* pvParameters);
+
 #endif // TOOLS_LIB_H_INCLUDED

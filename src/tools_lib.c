@@ -512,3 +512,71 @@ float sharp_convert(unsigned long value)
 {
     return 4800/(value - 20);
 }
+
+extern xQueueHandle screenMsgQueue;
+
+void servoBroadcast(void* pvParameters)
+{
+    portTickType xLastWakeTime;
+    xLastWakeTime = xTaskGetTickCount();
+    char* msg = pvPortMalloc(sizeof(char) * 21);
+    
+    
+    // !!!!!!!! UART1 -> UART2  !!!!!!!!!
+    for (int i = 0; i < 256; ++i)
+    {
+        if(2000000/(i+1) < 100000)
+            break;
+
+        UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), 2000000/(i+1), 
+                            (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
+
+        servoParam[0] = 0x19; // LED
+        servoParam[1] = 0x01; // Value 1
+        servoCmd(SERVO_BROADCAST, INST_WRITE, 2);
+
+        m_itoa(i, msg, 10);
+        xQueueSend(screenMsgQueue, (void*) &msg, 0);
+
+        vTaskDelayUntil (&xLastWakeTime, (500 / portTICK_RATE_MS));
+    }
+
+
+    UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), 200000,
+                        (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
+
+
+ 
+    m_itoa(256, msg, 10);
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
+    servoParam[0] = 0x19; // LED
+    servoParam[1] = 0x01; // Value 1
+    servoCmd(SERVO_BROADCAST, INST_WRITE, 2);
+    
+
+
+    while(1){
+        vTaskDelayUntil (&xLastWakeTime, (100000 / portTICK_RATE_MS));
+    }
+
+    
+
+ 
+    /*
+    TEEEEEEST
+    UARTConfigSetExpClk(UART1_BASE, SysCtlClockGet(), 2000000,
+                        (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
+
+    servoParam[0] = 0x04;
+    servoParam[1] = 0x09;
+    servoCmd(SERVO_BROADCAST, INST_WRITE, 2);
+    
+
+
+
+    vTaskDelayUntil (&xLastWakeTime, (4000 / portTICK_RATE_MS));
+
+    vTaskDelayUntil (&xLastWakeTime, (100000 / portTICK_RATE_MS));
+    */
+    
+}
