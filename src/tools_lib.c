@@ -463,7 +463,6 @@ void flapRightDown(portTickType* xLastWakeTime)
 
 void flapRightUp(portTickType* xLastWakeTime)
 {
-    flapLeftDown(xLastWakeTime);
 
     flapParam[0] = 0x1E;
     flapParam[1] = FLAP_RIGHT_UP_LOW;

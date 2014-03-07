@@ -65,10 +65,10 @@ int main (void)
     pln("Initialization over");
 
     //servoLEDWrite();
-    //servoLaunchSequence();
-    // flapLaunchSequence();
+    servoLaunchSequence();
+    //flapLaunchSequence();
 
-    // bootmenu();
+    bootmenu();
 
     // Creating semaphores
     cpuCounterMutex = xSemaphoreCreateMutex();
@@ -86,14 +86,14 @@ int main (void)
 
     // Creating tasks
     xTaskCreate(idleTask, (signed char *) "idleTask", 40, NULL, (tskIDLE_PRIORITY), NULL);
-    //xTaskCreate(idleStat, (signed char *) "idleStat", 100, NULL, (tskIDLE_PRIORITY+1), NULL);
+    xTaskCreate(idleStat, (signed char *) "idleStat", 100, NULL, (tskIDLE_PRIORITY+1), NULL);
     xTaskCreate(blinky, (signed char *) "blinky", 40, NULL, (tskIDLE_PRIORITY + 2), NULL);
     xTaskCreate(launchOLED, (signed char *) "launchOLED", 100, NULL, (tskIDLE_PRIORITY + 2), NULL);
 
-    xTaskCreate(servoBroadcast, (signed char *) "servoBroadcast", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    //xTaskCreate(servoBroadcast, (signed char *) "servoBroadcast", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
     //xTaskCreate(servoCmdLine, (signed char *) "servoCmdLine", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
 
-    //xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
+    xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
     //xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
     //xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
     //xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
@@ -370,7 +370,7 @@ void idleStat      (void* pvParameters)
     {
         xSemaphoreTake(cpuCounterMutex, portMAX_DELAY);
         /// CPU USAGE
-        int percUse = 100-cpuUsageCounter*100 / MAX_USE;
+        int percUse = 100 - cpuUsageCounter*100 / MAX_USE;
         if (percUse == 0)
             index = 1;
         else if (percUse < 0)
@@ -427,7 +427,6 @@ void ROOTtask(void* pvParameters)
         while (true)
             vTaskDelayUntil (&xLastWakeTime, (10000 / portTICK_RATE_MS));;
     }
-
     msg = "Initializing flaps...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
     flapInit(&xLastWakeTime);
@@ -504,26 +503,25 @@ void ROOTtask(void* pvParameters)
 bool checkServoStatus(portTickType* xLastWakeTime)
 {
     bool ok = true;
-
+    char* msg;
     servoCmd(1, INST_PING, 0);
     if (!servoCheck(xLastWakeTime))
     {
         ok = false;
         pln2("Servo 1 error");
+
+        msg = "Servo 1 PAS OK!";
+        xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
 
-    servoCmd(2, INST_PING, 0);
+    servoCmd(0, INST_PING, 0);
     if (!servoCheck(xLastWakeTime))
     {
         ok = false;
-        pln2("Servo 2 error");
-    }
+        pln2("Servo 0 error");
 
-    flapCmdUnchecked(3, INST_PING, 0);
-    if (!flapCheck(xLastWakeTime))
-    {
-        ok = false;
-        pln2("Servo 3 error");
+        msg = "Servo 0 PAS OK!";
+        xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
 
     flapCmdUnchecked(4, INST_PING, 0);
@@ -531,23 +529,42 @@ bool checkServoStatus(portTickType* xLastWakeTime)
     {
         ok = false;
         pln2("Servo 4 error");
+        msg = "Servo 4 PAS OK!";
+        xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
+
+
+    /*flapCmdUnchecked(4, INST_PING, 0);
+    if (!flapCheck(xLastWakeTime))
+    {
+        ok = false;
+        pln2("Servo 4 error");
+    }*/
 
     return ok;
 }
 
 void flapInit(portTickType* xLastWakeTime)
 {
+    char* msg;
+
     flapRightConfig(xLastWakeTime);
-    flapLeftConfig(xLastWakeTime);
+    //flapLeftConfig(xLastWakeTime);
 
     flapRightDown(xLastWakeTime);
-    flapLeftDown(xLastWakeTime);
+    //flapLeftDown(xLastWakeTime);
 
     int delay = 1000;
 
+
+    msg = "RIGHT DOWN";
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
+
     vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
     flapRightUp(xLastWakeTime);
+
+    msg = "RIGHT UP!";
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
     vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
     flapRightBall(xLastWakeTime);
@@ -555,27 +572,27 @@ void flapInit(portTickType* xLastWakeTime)
     vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
     flapRightDown(xLastWakeTime);
 
-    vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-    flapLeftUp(xLastWakeTime);
+    //vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
+    //flapLeftUp(xLastWakeTime);
 
-    vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-    flapLeftBall(xLastWakeTime);
+    //vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
+    //flapLeftBall(xLastWakeTime);
 
-    vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-    flapLeftDown(xLastWakeTime);
+    //vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
+    //flapLeftDown(xLastWakeTime);
 }
 
 void servoInit(portTickType* xLastWakeTime)
 {
-    servoForwardFULL(xLastWakeTime, 1);
-    servoBackwardFULL(xLastWakeTime, 2);
+    servoForwardFULL(xLastWakeTime, 0); // Avant, c'était 1
+    servoBackwardFULL(xLastWakeTime, 1); // Avant, c'était 2
     vTaskDelayUntil (xLastWakeTime, (400 / portTICK_RATE_MS));
     servoSTOP();
 
     vTaskDelayUntil (xLastWakeTime, (1000 / portTICK_RATE_MS));
 
-    servoBackwardFULL(xLastWakeTime, 1);
-    servoForwardFULL(xLastWakeTime, 2);
+    servoBackwardFULL(xLastWakeTime, 0); // Avant, c'étati 1
+    servoForwardFULL(xLastWakeTime, 1); // Avant, c'était 2
     vTaskDelayUntil (xLastWakeTime, (400 / portTICK_RATE_MS));
     servoSTOP();
 }
