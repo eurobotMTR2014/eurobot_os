@@ -48,6 +48,9 @@
 #define FLAP_LEFT_SECURE_HIGH FLAP_MAX_VAL_HIGH - FLAP_RIGHT_SECURE_HIGH
 #define FLAP_LEFT_SECURE_LOW  FLAP_MAX_VAL_LOW  - FLAP_RIGHT_SECURE_LOW
 
+void servoLEDWrite();
+
+
 /// Servo library
 // Protocol functions
 void servoCmdRAW(char ID, char instruction, char paramLength,

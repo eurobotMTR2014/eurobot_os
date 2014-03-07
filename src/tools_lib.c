@@ -3,6 +3,8 @@
 
 #include "tools_lib.h"
 
+#include "custom_lib.h"
+
 char servoParam[SERVO_BUFSIZ];
 char flapParam[SERVO_BUFSIZ];
 
@@ -25,11 +27,33 @@ char* flapRxParams = flapBufferRx + 5;
 static unsigned long rx_servo_ms_wait = UART_RX_MS_WAIT; // Static here to avoid stack overflows
 static unsigned long rx_flap_ms_wait = UART_RX_MS_WAIT; // Static here to avoid stack overflows
 
+void servoLEDWrite()
+{
+
+    //char params[2];
+    // ALLUMER LES LEDS
+    servoParam[0] = 0x19;
+    servoParam[1] = 0x01;
+
+    servoCmdRAW(0, INST_WRITE, 2, SERVO_UART, SERVO_CMD_PIN_BASE, SERVO_CMD_PIN_NB, servoParam, servoBufferTx);
+
+    servoCmdRAW(1, INST_WRITE, 2, SERVO_UART, SERVO_CMD_PIN_BASE, SERVO_CMD_PIN_NB, servoParam, servoBufferTx);
+
+    // CONTROLE EN POSITION
+    servoParam[0] = 0x1E;
+    servoParam[1] = 0x00;
+    servoParam[2] = 0x02;
+    servoParam[3] = 0x00;
+    servoParam[4] = 0x02;
+
+    servoCmdRAW(1, INST_WRITE, 5, SERVO_UART, SERVO_CMD_PIN_BASE, SERVO_CMD_PIN_NB, servoParam, servoBufferTx);
+
+}
 void servoCmdRAW(char ID, char instruction, char paramLength,
                   unsigned long base, unsigned long ctrl_pin_base, unsigned long ctrl_pin_nb,
                   char* param, char* bufferTx)
 {
-    char packetLength = paramLength+4+2;
+    char packetLength = paramLength + 4 + 2;
 
     if (packetLength > SERVO_BUFSIZ)
     {
@@ -39,7 +63,7 @@ void servoCmdRAW(char ID, char instruction, char paramLength,
     bufferTx[0] = 0xFF;
     bufferTx[1] = 0xFF;
     bufferTx[2] = ID;
-    bufferTx[3] = paramLength+2;
+    bufferTx[3] = paramLength + 2 ;
     bufferTx[4] = instruction;
 
     char bCount = 0;
@@ -51,7 +75,7 @@ void servoCmdRAW(char ID, char instruction, char paramLength,
 
     char chkSum = 0;
 
-    for(bCount = 2; bCount < packetLength-1; ++bCount)
+    for(bCount = 2; bCount < packetLength - 1; ++bCount)
     {
         chkSum += bufferTx[bCount];
     }
@@ -519,16 +543,18 @@ void servoBroadcast(void* pvParameters)
 {
     portTickType xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
-    char* msg = pvPortMalloc(sizeof(char) * 21);
-    
-    
+    //char* msg = pvPortMalloc(sizeof(char) * 21);
+
+    //servoForwardFULL(&xLastWakeTime, 0);
+    servoLEDWrite();
+
     // !!!!!!!! UART1 -> UART2  !!!!!!!!!
-    for (int i = 0; i < 256; ++i)
+    /*for (int i = 0; i < 256; ++i)
     {
         if(2000000/(i+1) < 100000)
             break;
 
-        UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), 2000000/(i+1), 
+        UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), 2000000/(i+1),
                             (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
 
         servoParam[0] = 0x19; // LED
@@ -546,22 +572,22 @@ void servoBroadcast(void* pvParameters)
                         (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
 
 
- 
+
     m_itoa(256, msg, 10);
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
     servoParam[0] = 0x19; // LED
     servoParam[1] = 0x01; // Value 1
     servoCmd(SERVO_BROADCAST, INST_WRITE, 2);
-    
+    */
 
 
     while(1){
         vTaskDelayUntil (&xLastWakeTime, (100000 / portTICK_RATE_MS));
     }
 
-    
 
- 
+
+
     /*
     TEEEEEEST
     UARTConfigSetExpClk(UART1_BASE, SysCtlClockGet(), 2000000,
@@ -570,7 +596,7 @@ void servoBroadcast(void* pvParameters)
     servoParam[0] = 0x04;
     servoParam[1] = 0x09;
     servoCmd(SERVO_BROADCAST, INST_WRITE, 2);
-    
+
 
 
 
@@ -578,5 +604,5 @@ void servoBroadcast(void* pvParameters)
 
     vTaskDelayUntil (&xLastWakeTime, (100000 / portTICK_RATE_MS));
     */
-    
+
 }

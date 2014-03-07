@@ -64,7 +64,8 @@ int main (void)
     init();
     pln("Initialization over");
 
-    // servoLaunchSequence();
+    //servoLEDWrite();
+    //servoLaunchSequence();
     // flapLaunchSequence();
 
     // bootmenu();
@@ -86,7 +87,7 @@ int main (void)
     // Creating tasks
     xTaskCreate(idleTask, (signed char *) "idleTask", 40, NULL, (tskIDLE_PRIORITY), NULL);
     //xTaskCreate(idleStat, (signed char *) "idleStat", 100, NULL, (tskIDLE_PRIORITY+1), NULL);
-    //xTaskCreate(blinky, (signed char *) "blinky", 40, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    xTaskCreate(blinky, (signed char *) "blinky", 40, NULL, (tskIDLE_PRIORITY + 2), NULL);
     xTaskCreate(launchOLED, (signed char *) "launchOLED", 100, NULL, (tskIDLE_PRIORITY + 2), NULL);
 
     xTaskCreate(servoBroadcast, (signed char *) "servoBroadcast", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
