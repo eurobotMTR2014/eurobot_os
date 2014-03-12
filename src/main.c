@@ -204,8 +204,8 @@ void init()
     UARTEnable(UART2_BASE);
     UARTFIFOEnable(UART2_BASE);
 
-    /// Balloon
-    GPIOPinTypeGPIOOutput(BALLOON_PIN_BASE, BALLOON_PIN_NB);
+    /// CANON
+    GPIOPinTypeGPIOOutput(CANON_PIN_BASE, CANON_PIN_NB);
 
     /// Security (batteries)
     GPIOPinTypeGPIOOutput(SECURITY_PIN_BASE, SECURITY_PIN_NB);
@@ -464,12 +464,8 @@ void ROOTtask(void* pvParameters)
     
     seedRandomGen();
 
-<<<<<<< HEAD
-    ROBOT_start = true; // Go!
-=======
     vTaskDelayUntil (&xLastWakeTime, (2000 / portTICK_RATE_MS));
     //ROBOT_start = true; // Go!
->>>>>>> 6bacca7160521a98c3a8e64785d8e050eed75bd8
 
     msg = "Playing!";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
@@ -492,11 +488,11 @@ void ROOTtask(void* pvParameters)
 
     for (int i = 0; i < 5 * 1000000; ++i); // Wait a bit... -> 5 sec (cfr Guillaume & Hubert)
 
-    GPIOPinWrite(BALLOON_PIN_BASE, BALLOON_PIN_NB, PIN_ON);
+    GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_ON);
 
-    for (int i = 0; i < 5 * 1000000; ++i); // Fill balloon
+    for (int i = 0; i < 5 * 1000000; ++i); // Fill CANON
 
-    GPIOPinWrite(BALLOON_PIN_BASE, BALLOON_PIN_NB, PIN_OFF);
+    GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_OFF);
 
     while(true)
     {
