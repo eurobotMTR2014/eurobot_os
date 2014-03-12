@@ -48,6 +48,8 @@
 #define FLAP_LEFT_SECURE_HIGH FLAP_MAX_VAL_HIGH - FLAP_RIGHT_SECURE_HIGH
 #define FLAP_LEFT_SECURE_LOW  FLAP_MAX_VAL_LOW  - FLAP_RIGHT_SECURE_LOW
 
+
+
 void servoLEDWrite();
 
 
@@ -112,6 +114,18 @@ void servoSync();
 #define ULTRAS_VCC 5
 float ultrason_convert(unsigned long value);
 float sharp_convert(unsigned long value);
+
+
+// Canon
+/*
+ * Throw a spear (ball)
+ */
+void throwSpear();
+
+/*
+ * Throw 'num' spears (balls) spaced out 'wait' ms
+ */
+void throwSomeSpears(portTickType* xLastWakeTime, unsigned long num, unsigned long wait);
 
 
 //Broadcast
