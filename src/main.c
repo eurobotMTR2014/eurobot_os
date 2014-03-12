@@ -461,7 +461,7 @@ void ROOTtask(void* pvParameters)
     {
         // Loop, waiting for start module
     }
-
+    
     seedRandomGen();
 
     vTaskDelayUntil (&xLastWakeTime, (2000 / portTICK_RATE_MS));
@@ -758,8 +758,8 @@ void bootmenu(void)
     PF6 = LEFT
     PF7 = RIGHT
     */
-
     //*
+
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOG);
     GPIOPinTypeGPIOInput(GPIO_PORTF_BASE,
@@ -771,6 +771,8 @@ void bootmenu(void)
     GPIOPadConfigSet(GPIO_PORTG_BASE, GPIO_PIN_4, GPIO_STRENGTH_2MA,
                      GPIO_PIN_TYPE_STD_WPU);
 
+
+    /*
 
     RIT128x96x4StringDraw("Which team?", 0, LINE_3, 15);
 
@@ -846,7 +848,7 @@ void bootmenu(void)
             // loop
         }
     }
-    //*/
+    // */
 }
 
 void servoLaunchSequence()

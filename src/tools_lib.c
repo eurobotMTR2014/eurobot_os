@@ -49,6 +49,7 @@ void servoLEDWrite()
     servoCmdRAW(1, INST_WRITE, 5, SERVO_UART, SERVO_CMD_PIN_BASE, SERVO_CMD_PIN_NB, servoParam, servoBufferTx);
 
 }
+
 void servoCmdRAW(char ID, char instruction, char paramLength,
                   unsigned long base, unsigned long ctrl_pin_base, unsigned long ctrl_pin_nb,
                   char* param, char* bufferTx)
@@ -128,7 +129,7 @@ char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* buffe
         {
             *rx_ms_wait = UART_RX_MS_WAIT;
             pln2("SERVO DOWN!!!");
-            UARTprintf("SERVO NOT REPONDING: %d", bufferRx[2]);
+            UARTprintf("SERVO NOT RESPONDING: %d", bufferRx[2]);
             return SERVO_NOT_RESP;
         }
 
@@ -266,6 +267,7 @@ bool servoCheck(portTickType* xLastWakeTime)
 
         errorReport("Servo proto error!");
     }
+    
     if (!servoRcvStatusOK())
     {
         retval = false;
@@ -288,15 +290,16 @@ bool flapCheck(portTickType* xLastWakeTime)
         retval = false;
         UARTprintf("Flap error: %d\n", rval);
 
-//        errorReport("Flap proto error!");
+        errorReport("Flap proto error!");
     }
+
     if (!flapRcvStatusOK())
     {
         retval = false;
 
         UARTprintf("Flap reception error: %d\n", flapRxStatus);
 
-//        errorReport("Flap ack error!");
+        errorReport("Flap ack error!");
     }
 
     return retval;
@@ -314,12 +317,12 @@ char flapListen(portTickType* xLastWakeTime)
 
 char servoRcvStatusOK()
 {
-    return servoBufferRx[4] == 0;
+    return servoBufferRx[4] == 0; // checks error byte in the Rx buffer
 }
 
 char flapRcvStatusOK()
 {
-    return flapBufferRx[4] == 0;
+    return flapBufferRx[4] == 0; // checks error byte in the Rx buffer
 }
 
 void servoRxBufferClrRAW(unsigned long base)
