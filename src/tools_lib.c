@@ -536,6 +536,31 @@ float sharp_convert(unsigned long value)
     return 4800/(value - 20);
 }
 
+
+
+
+void throwSpear(){
+
+    GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_ON);
+
+    for (int i = 0; i < 1000000; ++i); // Wait aporox 1 sec
+
+    GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_OFF);
+}
+
+
+void throwSomeSpears(portTickType* xLastWakeTime, unsigned long num, unsigned long wait){
+    
+    for(unsigned int i = 0 ; i < num ; ++i){
+        throwSpear();
+
+        vTaskDelayUntil (xLastWakeTime, (wait / portTICK_RATE_MS));
+    }
+}
+
+
+
+
 extern xQueueHandle screenMsgQueue;
 
 void servoBroadcast(void* pvParameters)
