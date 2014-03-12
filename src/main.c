@@ -427,9 +427,9 @@ void ROOTtask(void* pvParameters)
         while (true)
             vTaskDelayUntil (&xLastWakeTime, (10000 / portTICK_RATE_MS));;
     }
-    msg = "Initializing flaps...";
-    xQueueSend(screenMsgQueue, (void*) &msg, 0);
-    flapInit(&xLastWakeTime);
+    //msg = "Initializing flaps...";
+    //xQueueSend(screenMsgQueue, (void*) &msg, 0);
+    //flapInit(&xLastWakeTime);
 
     msg = "Initializing servos...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
@@ -485,7 +485,7 @@ void ROOTtask(void* pvParameters)
     flapSTOP();
     IntMasterDisable();
 
-    for (int i = 0; i < 5 * 1000000; ++i); // Wait a bit...
+    for (int i = 0; i < 5 * 1000000; ++i); // Wait a bit... -> 5 sec (cfr Guillaume & Hubert)
 
     GPIOPinWrite(BALLOON_PIN_BASE, BALLOON_PIN_NB, PIN_ON);
 
