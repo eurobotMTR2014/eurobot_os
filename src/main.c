@@ -465,7 +465,7 @@ void ROOTtask(void* pvParameters)
     seedRandomGen();
 
     vTaskDelayUntil (&xLastWakeTime, (2000 / portTICK_RATE_MS));
-    ROBOT_start = true; // Go!
+    //ROBOT_start = true; // Go!
 
     msg = "Playing!";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
@@ -591,7 +591,7 @@ void servoInit(portTickType* xLastWakeTime)
     msg = "WAIT";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
-    vTaskDelayUntil (xLastWakeTime, (1000 / portTICK_RATE_MS));
+    vTaskDelayUntil (xLastWakeTime, (2000 / portTICK_RATE_MS));
 
     msg = "BACKWARD";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
