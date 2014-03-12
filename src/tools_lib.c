@@ -340,7 +340,7 @@ char servoForward(portTickType* xLastWakeTime, char ID, char upval, char downval
     servoParam[0] = 0x20;
     servoParam[1] = downval;
     servoParam[2] = upval;
-    servoCmd(ID, INST_WRITE, 3);
+    servoCmd(ID, REG_INST_WRITE, 3); // CAUTION ! 'REG_' added for tests
 
     char rval = servoListen(xLastWakeTime);
     /*if (rval != SERVO_RECEIVED_OK)

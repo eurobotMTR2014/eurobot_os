@@ -583,8 +583,12 @@ void servoInit(portTickType* xLastWakeTime)
     msg = "FORWARD";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
+
     servoForwardFULL(xLastWakeTime, 0); // Avant, c'était 1
     servoBackwardFULL(xLastWakeTime, 1); // Avant, c'était 2
+
+    servoSync();
+
     vTaskDelayUntil (xLastWakeTime, (100 / portTICK_RATE_MS));
     servoSTOP();
 
@@ -598,6 +602,9 @@ void servoInit(portTickType* xLastWakeTime)
 
     servoBackwardFULL(xLastWakeTime, 0); // Avant, c'étati 1
     servoForwardFULL(xLastWakeTime, 1); // Avant, c'était 2
+
+    servoSync();
+
     vTaskDelayUntil (xLastWakeTime, (100 / portTICK_RATE_MS));
     servoSTOP();
 }
