@@ -20,7 +20,6 @@ void DELAY_FETCH()
     vTaskDelayUntil (&xLastWakeTime, (DOUBLE_FETCH_DELAY / portTICK_RATE_MS));
 }
 
-
 extern xQueueHandle screenMsgQueue;
 extern xSemaphoreHandle usBufSwitchMutex;
 extern xSemaphoreHandle sharpBufSwitchMutex;

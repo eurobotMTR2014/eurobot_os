@@ -586,14 +586,14 @@ void servoInit(portTickType* xLastWakeTime)
 {
     servoForwardFULL(xLastWakeTime, 0); // Avant, c'était 1
     servoBackwardFULL(xLastWakeTime, 1); // Avant, c'était 2
-    vTaskDelayUntil (xLastWakeTime, (400 / portTICK_RATE_MS));
+    vTaskDelayUntil (xLastWakeTime, (100 / portTICK_RATE_MS));
     servoSTOP();
 
-    vTaskDelayUntil (xLastWakeTime, (1000 / portTICK_RATE_MS));
+    vTaskDelayUntil(xLastWakeTime, (1000 / portTICK_RATE_MS));
 
     servoBackwardFULL(xLastWakeTime, 0); // Avant, c'étati 1
     servoForwardFULL(xLastWakeTime, 1); // Avant, c'était 2
-    vTaskDelayUntil (xLastWakeTime, (400 / portTICK_RATE_MS));
+    vTaskDelayUntil (xLastWakeTime, (100 / portTICK_RATE_MS));
     servoSTOP();
 }
 

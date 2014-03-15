@@ -53,12 +53,24 @@ void servoLEDWrite();
 
 /// Servo library
 // Protocol functions
+
+/**
+ * Low-level function for sending a command to a servo (writing on a certain GPIO port)
+ * @param ID the ID of the servo (use SERVO_BROADCAST for broacasting)
+ * @param instruction the code of the instruction (see the "#define INST_XXXX")
+ * @param paramLength the number of params given in the servoParam char array
+ * @param base the UART channel for sending the message (see IO_parameters.h : FLAP_UART, SERVO_UART)
+ * @param ctrl_pin_base base address of the GPIO port used (see IO_parameters.h : XXXXXX_PIN_BASE)
+ * @param ctrl_pin_nb number of pin used (see IO_parameters.h : XXXXXX_PIN_NB)
+ * @param servoParam a char array containing the parameters
+ * @param servoBufferTx the transmission buffer (see tools_lib.c : servoBufferTx and flapBufferTx)
+ */
 void servoCmdRAW(char ID, char instruction, char paramLength,
                   unsigned long base, unsigned long ctrl_pin_base, unsigned long ctrl_pin_nb,
                   char* servoParam, char* servoBufferTx);
 
-/*
- * Send instruction to a servo
+/**
+ * Sends instruction to a servo 
  * @param ID id of the servo
  * @param instruction instruction code
  * @param paramLength nb_parameters
@@ -66,19 +78,71 @@ void servoCmdRAW(char ID, char instruction, char paramLength,
  */
 void servoCmdParam(char ID, char instruction, char paramLength, char* servoParam);
 
+/**
+ * Listens to a servo and returns a status code
+ * @param xLastWakeTime : number of tick since the calling task was awoken
+ * @param base the UART channel for sending the message (see IO_parameters.h : FLAP_UART, SERVO_UART)
+ * @param servoBufferTx the transmission buffer (see tools_lib.c : servoBufferTx and flapBufferTx)
+ * @param servoBufferRx the reception buffer (see tools_lib.c : servoBufferRx and flapBufferRx)
+ * @param rx_ms_wait a pointer to the number of millisecond that the function waits for servo message (see tools_lib.c rx_xxxx_ms_wait)
+ * @return a number indicating failure or success (see SERVO_RECEIVED_OK, SERVO_HEAD_ERROR,...)
+ */
 char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* bufferTx, char* bufferRx, unsigned long* rx_ms_wait);
 
+/**
+ * High-level function for sending a command to a servo
+ * @param ID the ID of the servo (use SERVO_BROADCAST for broadcasting)
+ * @param instruction the instruction code of the instr. to send
+ * @param paramLength the number of parameters in the servoParam char array (see tools_lib.c)
+ */
 void servoCmd(char ID, char instruction, char paramLength);
+
+/**
+ * High-level function for sending a command. The command is re-sent while the servo hasn't received and acked it.
+ * @param ID the ID of the servo (use SERVO_BROADCAST for broadcasting)
+ * @param instruction the instruction code of the instr. to send
+ * @param paramLength the number of parameters in the servoParam char array (see tools_lib.c) 
+ * @param xLastWakeTime : number of tick since the calling task was awoken
+ */
 void flapCmd(char ID, char instruction, char paramLength, portTickType* xLastWakeTime);
+
+/** 
+ * High-level function for sending a command
+ * @param ID the ID of the servo (use SERVO_BROADCAST for broadcasting)
+ * @param instruction the instruction code of the instr. to send
+ * @param paramLength the number of parameters in the servoParam char array (see tools_lib.c) 
+ */
 void flapCmdUnchecked(char ID, char instruction, char paramLength);
 
+/**
+ * Checks if the servo responds and if the response contains no error.
+ * @param xLastWakeTime : number of tick since the calling task was awoken
+ * @return true if the servo is ok, false if either it doesn't respond or it returned an error or both
+ */
 bool servoCheck(portTickType* xLastWakeTime);
+
+/**
+ * Checks if the flap servo responds and if the response contains no error.
+ * @param xLastWakeTime : number of tick since the calling task was awoken
+ * @return true if the flap servo is ok, false if either it doesn't respond or it returned an error or both
+ */
 bool flapCheck(portTickType* xLastWakeTime);
 
 char servoListen(portTickType* xLastWakeTime);
 char flapListen(portTickType* xLastWakeTime);
 
+/**
+ * Checks if the last message received from a servo contained an error.
+ * The function servoListen or servoListenRAW (on a servo) must have been called before
+ * @return 0 if there was an error, another char otherwise
+ */
 char servoRcvStatusOK();
+
+/**
+ * Checks if the last message received from a flap servo contained an error
+ * The function flapListen or servoListenRAW (on a flap servo) must have been called before
+ * @return 0 if there was an error, another char otherwise
+ */
 char flapRcvStatusOK();
 
 void servoRxBufferClrRAW(unsigned long base);
