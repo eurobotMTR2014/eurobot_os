@@ -486,14 +486,6 @@ void ROOTtask(void* pvParameters)
     flapSTOP();
     IntMasterDisable();
 
-    for (int i = 0; i < 5 * 1000000; ++i); // Wait a bit... -> 5 sec (cfr Guillaume & Hubert)
-
-    GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_ON);
-
-    for (int i = 0; i < 5 * 1000000; ++i); // Fill CANON
-
-    GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_OFF);
-
     while(true)
     {
         servoSTOP();
