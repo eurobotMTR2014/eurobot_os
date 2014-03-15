@@ -464,12 +464,8 @@ void ROOTtask(void* pvParameters)
     
     seedRandomGen();
 
-<<<<<<< HEAD
-    ROBOT_start = true; // Go!
-=======
     vTaskDelayUntil (&xLastWakeTime, (2000 / portTICK_RATE_MS));
     //ROBOT_start = true; // Go!
->>>>>>> 6bacca7160521a98c3a8e64785d8e050eed75bd8
 
     msg = "Playing!";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
