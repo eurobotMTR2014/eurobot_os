@@ -204,8 +204,8 @@ void init()
     UARTEnable(UART2_BASE);
     UARTFIFOEnable(UART2_BASE);
 
-    /// Canon
-    GPIOPinTypeGPIOOutput(CANON_PIN_BASE, CANON_PIN_NB);
+    /// Balloon
+    GPIOPinTypeGPIOOutput(BALLOON_PIN_BASE, BALLOON_PIN_NB);
 
     /// Security (batteries)
     GPIOPinTypeGPIOOutput(SECURITY_PIN_BASE, SECURITY_PIN_NB);
@@ -464,7 +464,6 @@ void ROOTtask(void* pvParameters)
     
     seedRandomGen();
 
-    vTaskDelayUntil (&xLastWakeTime, (2000 / portTICK_RATE_MS));
     ROBOT_start = true; // Go!
 
     msg = "Playing!";
@@ -485,6 +484,14 @@ void ROOTtask(void* pvParameters)
     servoSTOP();
     flapSTOP();
     IntMasterDisable();
+
+    for (int i = 0; i < 5 * 1000000; ++i); // Wait a bit... -> 5 sec (cfr Guillaume & Hubert)
+
+    GPIOPinWrite(BALLOON_PIN_BASE, BALLOON_PIN_NB, PIN_ON);
+
+    for (int i = 0; i < 5 * 1000000; ++i); // Fill balloon
+
+    GPIOPinWrite(BALLOON_PIN_BASE, BALLOON_PIN_NB, PIN_OFF);
 
     while(true)
     {
@@ -517,7 +524,6 @@ bool checkServoStatus(portTickType* xLastWakeTime)
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
 
-    /*
     flapCmdUnchecked(4, INST_PING, 0);
     if (!flapCheck(xLastWakeTime))
     {
@@ -526,7 +532,6 @@ bool checkServoStatus(portTickType* xLastWakeTime)
         msg = "Servo 4 PAS OK!";
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
-    */
 
 
     /*flapCmdUnchecked(4, INST_PING, 0);
@@ -579,22 +584,12 @@ void flapInit(portTickType* xLastWakeTime)
 
 void servoInit(portTickType* xLastWakeTime)
 {
-    char * msg;
-    msg = "FORWARD";
-    xQueueSend(screenMsgQueue, (void*) &msg, 0);
-
     servoForwardFULL(xLastWakeTime, 0); // Avant, c'était 1
     servoBackwardFULL(xLastWakeTime, 1); // Avant, c'était 2
     vTaskDelayUntil (xLastWakeTime, (100 / portTICK_RATE_MS));
     servoSTOP();
 
-    msg = "WAIT";
-    xQueueSend(screenMsgQueue, (void*) &msg, 0);
-
-    vTaskDelayUntil (xLastWakeTime, (1000 / portTICK_RATE_MS));
-
-    msg = "BACKWARD";
-    xQueueSend(screenMsgQueue, (void*) &msg, 0);
+    vTaskDelayUntil(xLastWakeTime, (1000 / portTICK_RATE_MS));
 
     servoBackwardFULL(xLastWakeTime, 0); // Avant, c'étati 1
     servoForwardFULL(xLastWakeTime, 1); // Avant, c'était 2
