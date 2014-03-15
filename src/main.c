@@ -204,8 +204,8 @@ void init()
     UARTEnable(UART2_BASE);
     UARTFIFOEnable(UART2_BASE);
 
-    /// Balloon
-    GPIOPinTypeGPIOOutput(BALLOON_PIN_BASE, BALLOON_PIN_NB);
+    /// CANON
+    GPIOPinTypeGPIOOutput(CANON_PIN_BASE, CANON_PIN_NB);
 
     /// Security (batteries)
     GPIOPinTypeGPIOOutput(SECURITY_PIN_BASE, SECURITY_PIN_NB);
@@ -488,11 +488,11 @@ void ROOTtask(void* pvParameters)
 
     for (int i = 0; i < 5 * 1000000; ++i); // Wait a bit... -> 5 sec (cfr Guillaume & Hubert)
 
-    GPIOPinWrite(BALLOON_PIN_BASE, BALLOON_PIN_NB, PIN_ON);
+    GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_ON);
 
-    for (int i = 0; i < 5 * 1000000; ++i); // Fill balloon
+    for (int i = 0; i < 5 * 1000000; ++i); // Fill CANON
 
-    GPIOPinWrite(BALLOON_PIN_BASE, BALLOON_PIN_NB, PIN_OFF);
+    GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_OFF);
 
     while(true)
     {
@@ -524,7 +524,8 @@ bool checkServoStatus(portTickType* xLastWakeTime)
         msg = "Servo 0 PAS OK!";
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
-
+    
+    /*
     flapCmdUnchecked(4, INST_PING, 0);
     if (!flapCheck(xLastWakeTime))
     {
@@ -535,7 +536,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
     }
 
 
-    /*flapCmdUnchecked(4, INST_PING, 0);
+    flapCmdUnchecked(4, INST_PING, 0);
     if (!flapCheck(xLastWakeTime))
     {
         ok = false;
@@ -585,8 +586,16 @@ void flapInit(portTickType* xLastWakeTime)
 
 void servoInit(portTickType* xLastWakeTime)
 {
+
+    char * msg;
+    msg = "FORWARD";
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
+
     servoForwardFULL(xLastWakeTime, 0); // Avant, c'était 1
     servoBackwardFULL(xLastWakeTime, 1); // Avant, c'était 2
+
+    servoSync();
+
     vTaskDelayUntil (xLastWakeTime, (100 / portTICK_RATE_MS));
     servoSTOP();
 
@@ -600,6 +609,9 @@ void servoInit(portTickType* xLastWakeTime)
 
     servoBackwardFULL(xLastWakeTime, 0); // Avant, c'étati 1
     servoForwardFULL(xLastWakeTime, 1); // Avant, c'était 2
+
+    servoSync();
+
     vTaskDelayUntil (xLastWakeTime, (100 / portTICK_RATE_MS));
     servoSTOP();
 }
