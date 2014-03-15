@@ -594,9 +594,6 @@ void servoInit(portTickType* xLastWakeTime)
     vTaskDelayUntil (xLastWakeTime, (100 / portTICK_RATE_MS));
     servoSTOP();
 
-<<<<<<< HEAD
-    vTaskDelayUntil(xLastWakeTime, (1000 / portTICK_RATE_MS));
-=======
     msg = "WAIT";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
@@ -604,7 +601,6 @@ void servoInit(portTickType* xLastWakeTime)
 
     msg = "BACKWARD";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
->>>>>>> 6bacca7160521a98c3a8e64785d8e050eed75bd8
 
     servoBackwardFULL(xLastWakeTime, 0); // Avant, c'étati 1
     servoForwardFULL(xLastWakeTime, 1); // Avant, c'était 2
