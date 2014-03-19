@@ -6,6 +6,19 @@
 #define SWITCH_DELAY 1
 #define DOUBLE_FETCH_DELAY 1
 
+#define ADC_SAMPLE_SEQ_0 0
+#define ADC_SAMPLE_SEQ_1 1
+#define ADC_SAMPLE_SEQ_2 2
+
+#define CAPTOR_US_FRONT 1
+#define CAPTOR_US_BACK 2
+#define CAPTOR_SHARP_FRONT 3
+#define CAPTOR_SHARP_BACK 4
+
+/**
+ * @fn DELAY_SWITCH
+ * Applies a delay of SWITCH_DELAY ms
+ */
 void DELAY_SWITCH()
 {
     portTickType xLastWakeTime;
@@ -13,6 +26,10 @@ void DELAY_SWITCH()
     vTaskDelayUntil (&xLastWakeTime, (SWITCH_DELAY / portTICK_RATE_MS));
 }
 
+/**
+ * @fn DELAY_FETCH
+ * Applies a delay of DOUBLE_FETCH_DELAY ms
+ */
 void DELAY_FETCH()
 {
     portTickType xLastWakeTime;
@@ -46,20 +63,71 @@ unsigned long ultraValsMed4[5];
 unsigned char ultraCount = 0;
 unsigned long* sharpVals = sharpValsBuf1Init;
 
+/**
+ * @fn captorSelect
+ * Selects the captors that is going to write on the input channel
+ * @param the captor number (CAPTOR_US_FRONT, CAPTOR_US_BACK, CAPTOR_SHARP_FRONT, CAPTOR_SHARP_BACK)
+ */
 void captorSelect(char capt);
 
+/**
+ * @fn fetchChannelRAW
+ * Fetches a given channel
+ * @param the sample sequence number 
+ * @return the digitalized signal 
+ */
 unsigned long fetchChannelRAW(unsigned long ch);
-unsigned long fetchChannel(unsigned long ch) {fetchChannelRAW(ch); DELAY_FETCH(); return fetchChannelRAW(ch);}
-unsigned long fetchChan0() {return fetchChannel(0);}
-unsigned long fetchChan1() {return fetchChannel(1);}
-unsigned long fetchChan2() {return fetchChannel(2);}
 
+unsigned long fetchChannel(unsigned long ch) 
+{
+    fetchChannelRAW(ch); 
+    DELAY_FETCH(); 
+    return fetchChannelRAW(ch);
+}
+
+unsigned long fetchChan0() 
+{
+    return fetchChannel(ADC_SAMPLE_SEQ_0);
+}
+
+unsigned long fetchChan1() 
+{
+    return fetchChannel(ADC_SAMPLE_SEQ_1);
+}
+
+unsigned long fetchChan2() 
+{
+    return fetchChannel(ADC_SAMPLE_SEQ_2);
+}
+
+/**
+ * @fn fetchSharp
+ * Fetches the output of the sharps (front and back) and put the results in the buffer sharpVals
+ */
 void fetchSharp();
+
+/**
+ * @fn fetchUS
+ * Fetches the output of the ultrason captors (front and back) and pu the results in the buffer ultraVals
+ */
 void fetchUS();
+
+/**
+ * @fn fetchBat
+ * Fetches the battery voltage and send a batteryReport
+ */
 void fetchBat();
+
 void stackOverflowSort(unsigned long* data, char N);
 
+/**
+ * ?????
+ */
 void sharpNewValue();
+
+/**
+ * ?????
+ */
 void USNewValue(char count);
 
 void captorsTask(void* pvParameters)
@@ -108,22 +176,22 @@ void captorSelect(char capt)
 {
     switch (capt)
     {
-    	case 1:
+    	case CAPTOR_US_FRONT:
             GPIOPinWrite(ANALOG_SELECT_HIGH_PIN_BASE, ANALOG_SELECT_HIGH_PIN_NB, PIN_OFF);  // Ultrasons avant
             GPIOPinWrite(ANALOG_SELECT_LOW_PIN_BASE, ANALOG_SELECT_LOW_PIN_NB, PIN_OFF);
     		return;
 
-    	case 2:
+    	case CAPTOR_US_BACK:
             GPIOPinWrite(ANALOG_SELECT_HIGH_PIN_BASE, ANALOG_SELECT_HIGH_PIN_NB, PIN_OFF);  // Ultrasons arrière
             GPIOPinWrite(ANALOG_SELECT_LOW_PIN_BASE, ANALOG_SELECT_LOW_PIN_NB, PIN_ON);
             return;
 
-        case 3:
+        case CAPTOR_SHARP_FRONT:
             GPIOPinWrite(ANALOG_SELECT_HIGH_PIN_BASE, ANALOG_SELECT_HIGH_PIN_NB, PIN_ON);   // Sharps avant
             GPIOPinWrite(ANALOG_SELECT_LOW_PIN_BASE, ANALOG_SELECT_LOW_PIN_NB, PIN_OFF);
             return;
 
-        case 4:
+        case CAPTOR_SHARP_BACK:
             GPIOPinWrite(ANALOG_SELECT_HIGH_PIN_BASE, ANALOG_SELECT_HIGH_PIN_NB, PIN_ON);   // Sharps arrière
             GPIOPinWrite(ANALOG_SELECT_LOW_PIN_BASE, ANALOG_SELECT_LOW_PIN_NB, PIN_ON);
             return;
@@ -149,11 +217,11 @@ unsigned long fetchChannelRAW(unsigned long ch)
 
 void fetchSharp()
 {
-    captorSelect(3); // Sharp avant
+    captorSelect(CAPTOR_SHARP_FRONT); // Sharp avant
     DELAY_SWITCH();
     sharpVals[0] = fetchChan0();
     sharpVals[1] = fetchChan1();
-    captorSelect(4); // Sharp arrière
+    captorSelect(CAPTOR_SHARP_BACK); // Sharp arrière
     DELAY_SWITCH();
     sharpVals[2] = fetchChan0();
     sharpVals[3] = fetchChan1();
@@ -161,7 +229,7 @@ void fetchSharp()
 
 void fetchUS()
 {
-    captorSelect(1); // US avant
+    captorSelect(CAPTOR_US_FRONT); // US avant
     DELAY_SWITCH();
 //    ultraVals[0] += fetchChan0();
 //    ultraVals[1] += fetchChan1();
@@ -170,7 +238,7 @@ void fetchUS()
     ultraValsMed2[ultraCount] = fetchChan1();
     ultraVals[1] += ultraValsMed2[ultraCount];
 
-    captorSelect(2); // US arrière
+    captorSelect(CAPTOR_US_BACK); // US arrière
     DELAY_SWITCH();
     ultraValsMed3[ultraCount] = fetchChan0();
     ultraVals[2] += ultraValsMed3[ultraCount];
