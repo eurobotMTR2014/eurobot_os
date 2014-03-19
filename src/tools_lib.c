@@ -512,10 +512,15 @@ void flapRightBall(portTickType* xLastWakeTime)
 /**
   * @fn flapConfig
   *
-  * Configure the angle limits of the flap.
+  * Configure the angle limits of the flap
   */
 
-//void flapConfig(portTickType* xLastWakeTime, char ID, char )
+void flapConfig(portTickType* xLastWakeTime, char ID, int angle){
+    flapParam[0] = 0x06;
+    // Up values -> 
+    flapParam[1] = 
+    flapParam[2] = 
+}
 
 /* ================================== */
 
