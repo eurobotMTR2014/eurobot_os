@@ -574,7 +574,7 @@ void servoLeft(portTickType* xLastWakeTime, char upval, char downval)
     bool ok;
     do
     {
-        servoCmd(1, INST_REG_WRITE, 3);
+        servoCmd(SERVO_LEFT_ID, INST_REG_WRITE, 3);
         ok = servoCheck(xLastWakeTime);
     } while (!ok);
 }
@@ -588,7 +588,7 @@ void servoRight(portTickType* xLastWakeTime, char upval, char downval)
     bool ok;
     do
     {
-        servoCmd(2, INST_REG_WRITE, 3);
+        servoCmd(SERVO_RIGHT_ID, INST_REG_WRITE, 3);
         ok = servoCheck(xLastWakeTime);
     } while (!ok);
 }
@@ -691,24 +691,5 @@ void servoBroadcast(void* pvParameters)
         vTaskDelayUntil (&xLastWakeTime, (100000 / portTICK_RATE_MS));
     }
 
-
-
-
-    /*
-    TEEEEEEST
-    UARTConfigSetExpClk(UART1_BASE, SysCtlClockGet(), 2000000,
-                        (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
-
-    servoParam[0] = 0x04;
-    servoParam[1] = 0x09;
-    servoCmd(SERVO_BROADCAST, INST_WRITE, 2);
-
-
-
-
-    vTaskDelayUntil (&xLastWakeTime, (4000 / portTICK_RATE_MS));
-
-    vTaskDelayUntil (&xLastWakeTime, (100000 / portTICK_RATE_MS));
-    */
 
 }
