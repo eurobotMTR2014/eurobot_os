@@ -14,7 +14,7 @@ typedef struct coordinate_t {
 /**
  * Defines the state of a robot. x, y are the absolute
  * coordinates, phi is the relative angle, and stop is
- * set to true if the robot is idle.
+ * set to true if the robot is idled.
  **/
 typedef struct state_t {
    float x;
@@ -93,5 +93,12 @@ void ctrl_calibphi(float phi);
  *@return 0 if going backwards, 1 if going forward, 2 if stopped.
  **/
 char ctrl_getForward();
+
+/**
+ * Update the encoder enc
+ * @param enc a pointer to the encoder structure
+ * @note the field ulBase must be set
+ */
+void updateEncoder(Encoder* enc);
 
 #endif
