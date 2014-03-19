@@ -37,34 +37,34 @@ extern volatile bool controlStop;
 extern volatile bool force_angle;
 extern volatile float forced_angle_value;
 
-typedef struct encoder_t {
+typedef struct Encoder_t {
    int tickvalue;
    portTickType time;
    bool forward;
    //unsigned long velocity;
    unsigned long ulBase;
-} encoder;
+} Encoder;
 
-typedef struct objective_t {
+typedef struct Objective_t {
    float x;
    float y;
    float phi;
    float k;
    bool stop;
-} objective;
+} Objective;
 
 static state currentstate;
-static objective goals[GOALS_POOL];
+static Objective goals[GOALS_POOL];
 static char firstgoal = 0; // When firstgoal == nextgoals,
 static char nextgoals = 0; // there is no desired goal.
 //static char stopping = 0;
 static int rv = 0;
 static int lv = 0;
 static portTickType cpu_tick;
-static encoder er;
-static encoder last_er;
-static encoder el;
-static encoder last_el;
+static Encoder er;
+static Encoder last_er;
+static Encoder el;
+static Encoder last_el;
 static float u1;
 static float u2;
 #ifdef PID_CONTROLLER_ENABLE
@@ -75,7 +75,7 @@ static float u2;
 
 void removeCurrentGoalState();
 void updateState();
-void updateEncoder(encoder* enc);
+void updateEncoder(Encoder* enc);
 void planner();
 void tracker(portTickType* xLastWakeTime);
 void turnToAngle(portTickType* xLastWakeTime,float forced_angle);
@@ -257,7 +257,7 @@ const state* ctrl_getCurrentState() {
  **/
 void ctrl_setNextGoalState(float x, float y, float phi, float k, bool stop) {
     //UARTprintf("Goal: %d;%d  %d/%d\n",(int)x,(int)y,(int)k,stop);
-    objective* d = &goals[nextgoals];
+    Objective* d = &goals[nextgoals];
    if (phi == 42) {
       d->x = x;
       d->y = y;
@@ -393,7 +393,7 @@ void updateState() {
 
 }
 
-void updateEncoder(encoder* enc) {
+void updateEncoder(Encoder* enc) {
    enc->time = xTaskGetTickCount();
    enc->tickvalue = (int) QEIPositionGet(enc->ulBase);
    enc->forward = (QEIDirectionGet(enc->ulBase) == (unsigned long) 1);
@@ -404,7 +404,7 @@ void updateEncoder(encoder* enc) {
 
 
 void planner() {
-   objective* d = &goals[firstgoal];
+   Objective* d = &goals[firstgoal];
    u1 = d->x - currentstate.x;
    u2 = d->y - currentstate.y;
 //   UARTprintf("planned trajectory (u1 = %d, ", (int) (u1 * 1000.0)); // %d = int, %u = uint.
@@ -413,7 +413,7 @@ void planner() {
 }
 
 void tracker(portTickType* xLastWakeTime) {
-    objective* d = &goals[firstgoal];
+    Objective* d = &goals[firstgoal];
    if (custom_sqrt(u1*u1 + u2*u2) <= EPSILON) { // WE ARE DONE, check the stop condition. If there is none, throw the old state, goto next.
 //      UARTprintf("Dude, awesome, we are done.\n"); // %d = int, %u = uint.
       if (d->stop) {
@@ -503,7 +503,7 @@ char ctrl_getForward() {
    if (currentstate.stop) {
       return 2;
    }
-   objective* d = &goals[firstgoal];
+   Objective* d = &goals[firstgoal];
    if (d->k > 0) {
       return 1;
    }
