@@ -49,6 +49,13 @@
 #define FLAP_LEFT_SECURE_LOW  FLAP_MAX_VAL_LOW  - FLAP_RIGHT_SECURE_LOW
 
 
+/* ============== 2014 ============== */
+
+#define FLAP_ID 2
+
+/* ================================== */
+
+
 
 void servoLEDWrite();
 
@@ -159,6 +166,19 @@ char servoRcvStatusOK();
 char flapRcvStatusOK();
 
 void servoRxBufferClrRAW(unsigned long base);
+
+/**
+ * @fn servoSetSpeed
+ * Change the speed. 
+ * ! Need a servoSync() to react !
+ *
+ * @param xLastWakeTime ...
+ * @param ID ID du servo
+ * @param speed Wanted speed. Have to be between -1.0 and 1.0. The actual value of the speed will be 'speed * 114[RPM]'.
+ * @return Result
+ */
+ 
+ char servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed);
 
 // Manual controls
 char servoForward(portTickType* xLastWakeTime, char ID, char upval, char downval);

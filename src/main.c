@@ -435,6 +435,16 @@ void ROOTtask(void* pvParameters)
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
     servoInit(&xLastWakeTime);
 
+    /*
+    vTaskDelayUntil (&xLastWakeTime, (300 / portTICK_RATE_MS));
+
+    msg = "FIRE...";
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
+
+    throwSpear();
+    */
+    
+
     if (ROBOT_team_choice)
         msg = "We are on RED team";
     else
@@ -541,7 +551,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
 void flapInit(portTickType* xLastWakeTime)
 {
     char* msg;
-
+    
     flapRightConfig(xLastWakeTime);
     //flapLeftConfig(xLastWakeTime);
 
@@ -583,28 +593,33 @@ void servoInit(portTickType* xLastWakeTime)
     msg = "FORWARD";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
-    servoForwardFULL(xLastWakeTime, 0); // Avant, c'était 1
-    servoBackwardFULL(xLastWakeTime, 1); // Avant, c'était 2
+    //servoForwardFULL(xLastWakeTime, 0); // Avant, c'était 1
+    //servoBackwardFULL(xLastWakeTime, 1); // Avant, c'était 2
+
+    servoSetSpeed(xLastWakeTime, 0, 0.5);
+    servoSetSpeed(xLastWakeTime, 1, -0.5);
 
     servoSync();
 
-    vTaskDelayUntil (xLastWakeTime, (100 / portTICK_RATE_MS));
+    vTaskDelayUntil (xLastWakeTime, (2000 / portTICK_RATE_MS));
     servoSTOP();
 
     msg = "WAIT";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
-    vTaskDelayUntil (xLastWakeTime, (2000 / portTICK_RATE_MS));
+    vTaskDelayUntil (xLastWakeTime, (1000 / portTICK_RATE_MS));
 
     msg = "BACKWARD";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
-    servoBackwardFULL(xLastWakeTime, 0); // Avant, c'étati 1
-    servoForwardFULL(xLastWakeTime, 1); // Avant, c'était 2
+    servoSetSpeed(xLastWakeTime, 0, -0.5);
+    servoSetSpeed(xLastWakeTime, 1, 0.5);
+    //servoBackwardFULL(xLastWakeTime, 0); // Avant, c'étati 1
+    //servoForwardFULL(xLastWakeTime, 1); // Avant, c'était 2
 
     servoSync();
 
-    vTaskDelayUntil (xLastWakeTime, (100 / portTICK_RATE_MS));
+    vTaskDelayUntil (xLastWakeTime, (2000 / portTICK_RATE_MS));
     servoSTOP();
 }
 
