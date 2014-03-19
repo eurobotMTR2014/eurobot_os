@@ -336,24 +336,19 @@ void servoRxBufferClrRAW(unsigned long base)
     }
 }
 
+    
+char servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed){
+   char data[2]; // Contains the data to send (2 * 8 bits)
+   int goalSpeed = (0x3FF * custom_abs(speed));
+   // If speed is < 0, servo will turn clowkwise 
+   if(speed < 0){
+       goalSpeed |= (0x1 << 10); // Set the 10th bit to 1 
+   }
+   data[0] = goalSpeed & 0xFF; // "downval" : Bits 0->7
+   data[1] = goalSpeed >> 8; // "upval" : Bits 8->15
 
- char servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed){
-    char data[2]; // Contains the data to send (2 * 8 bits)
-
-    int goalSpeed = (0x3FF * custom_abs(speed));
-
-    // If speed is < 0, servo will turn clowkwise 
-    if(speed < 0){
-        goalSpeed |= (0x1 << 10); // Set the 10th bit to 1 
-    }
-
-    data[0] = goalSpeed & 0xFF; // "downval" : Bits 0->7
-    data[1] = goalSpeed >> 8; // "upval" : Bits 8->15
- 
-    return servoForward(xLastWakeTime, ID, data[1], data[0]);
- }
-
- 
+   return servoForward(xLastWakeTime, ID, data[1], data[0]);
+}
 
 
 char servoForward(portTickType* xLastWakeTime, char ID, char upval, char downval)
@@ -523,7 +518,6 @@ void flapConfig(portTickType* xLastWakeTime, char ID, int angle){
 }
 
 /* ================================== */
-
 
 
 // Automatic control
