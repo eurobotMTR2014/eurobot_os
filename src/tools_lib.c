@@ -504,18 +504,52 @@ void flapRightBall(portTickType* xLastWakeTime)
 
 /* ============== 2014 ============== */
 
+int static servoConvertAngleToHex(int angle){
+    if(angle < 0 || angle > 300)
+        return 0;
+
+    return (1023/300) * angle;
+}
+
 /**
   * @fn flapConfig
   *
   * Configure the angle limits of the flap
+  * @param Un peu perdu :( Doit savoir d'abord dans quel sens sera le servo
   */
 
-void flapConfig(portTickType* xLastWakeTime, char ID, int angle){
+void flapConfig(portTickType* xLastWakeTime, char ID, int angleDown, int angleUp){
     flapParam[0] = 0x06;
-    // Up values -> 
-    flapParam[1] = 
-    flapParam[2] = 
+
+    int angleLimitUp = servoConvertAngleToHex(angleUp);
+    int angleLimitDown = servoConvertAngleToHex(angleDown);
+
+    // Up values -> CW
+    flapParam[1] = angleLimitDown & 0xFF;
+    flapParam[2] = angleLimitDown >> 8;
+
+    // Down values -> CCW
+    flapParam[3] = angleLimitUp & 0xFF;
+    flapParam[4] = angleLimitUp >> 8;
+
+    flapCmd(FLAP_ID, INST_WRITE, 5, xLastWakeTime);
 }
+
+/**
+  * @fn flapGoalAngle
+  *
+  */
+void flapGoalAngle(portTickType* xLastWakeTime, char ID, int angle){
+    flapParam[0] = 0x1E;
+    int angleGoal = servoConvertAngleToHex(angle);
+
+    flapParam[1] = angleGoal & 0xFF;
+    flapParam[2] = angleGoal >> 8;
+
+    flapCmd(FLAP_ID, INST_WRITE, 3, xLastWakeTime);
+}
+
+/* NOT OPERATIONAL YET ! */
 
 /* ================================== */
 

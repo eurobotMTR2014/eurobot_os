@@ -418,6 +418,10 @@ void ROOTtask(void* pvParameters)
 
     msg = "Checking servo status";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
+
+    /*
+     * Note : Changer checkServoStatus pour intégrer le flap avant les tests!!!!
+     */
     if (!checkServoStatus(&xLastWakeTime))
     {
         msg = "Error during check";
@@ -427,6 +431,10 @@ void ROOTtask(void* pvParameters)
         while (true)
             vTaskDelayUntil (&xLastWakeTime, (10000 / portTICK_RATE_MS));;
     }
+
+    /*
+     * Et décommenter ça aussi !
+     */
     //msg = "Initializing flaps...";
     //xQueueSend(screenMsgQueue, (void*) &msg, 0);
     //flapInit(&xLastWakeTime);
