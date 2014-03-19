@@ -219,23 +219,34 @@ void flapRightBall(portTickType* xLastWakeTime);
 
 /**
   * @fn flapConfig
-  *
   * Configure the angle limits of the flap
-  * @param Un peu perdu :( Doit savoir d'abord dans quel sens sera le servo
+  * @param xLastWakeTime
+  * @param angleDown : Limit down angle.
+  * @param angleUp : Limit up angle.
   */
-void flapConfig(portTickType* xLastWakeTime, char ID, int angleDown, int angleUp);
+void flapConfig(portTickType* xLastWakeTime, int angleDown, int angleUp);
 
 /**
   * @fn flapGoalAngle
-  *
-  * @param speed Wanted speed. Have to be between -1.0 and 1.0. The actual value of the speed will be 'speed * 114[RPM]'.
+  * Move the flap at a certain angle with a certain speed.
+  * @param angle : Wanted angle.
+  * @param speed : Wanted speed. Have to be between -1.0 and 1.0. The actual value of the speed will be 'speed * 114[RPM]'.
   */
-void flapGoalAngle(portTickType* xLastWakeTime, char ID, int angle, float speed);
+void flapGoalAngle(portTickType* xLastWakeTime, int angle, float speed);
 
 /**
-  * @fn 
-  *
+  * @fn flapDown
+  * Move the flap down.
+  * @param xLastWakeTime
   */
+  void flapDown(portTickType* xLastWakeTime);
+
+/**
+  * @fn flapUp
+  * Move the flap up.
+  * @param xLastWakeTime
+  */
+  void flapUp(portTickType* xLastWakeTime);
 
 /* ================================================================ */
 
