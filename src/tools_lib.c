@@ -4,6 +4,7 @@
 #include "tools_lib.h"
 
 #include "custom_lib.h"
+#include "custom_math.h"
 
 char servoParam[SERVO_BUFSIZ];
 char flapParam[SERVO_BUFSIZ];
@@ -335,6 +336,21 @@ void servoRxBufferClrRAW(unsigned long base)
     }
 }
 
+    
+char servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed){
+   char data[2]; // Contains the data to send (2 * 8 bits)
+   int goalSpeed = (0x3FF * custom_abs(speed));
+   // If speed is < 0, servo will turn clowkwise 
+   if(speed < 0){
+       goalSpeed |= (0x1 << 10); // Set the 10th bit to 1 
+   }
+   data[0] = goalSpeed & 0xFF; // "downval" : Bits 0->7
+   data[1] = goalSpeed >> 8; // "upval" : Bits 8->15
+
+   return servoForward(xLastWakeTime, ID, data[1], data[0]);
+}
+
+
 char servoForward(portTickType* xLastWakeTime, char ID, char upval, char downval)
 {
     servoParam[0] = 0x20;
@@ -484,6 +500,20 @@ void flapRightBall(portTickType* xLastWakeTime)
     flapParam[4] = 0x03;
     flapCmd(4, INST_WRITE, 5, xLastWakeTime);
 }
+
+
+/* ============== 2014 ============== */
+
+/**
+  * @fn flapConfig
+  *
+  * Configure the angle limits of the flap.
+  */
+
+//void flapConfig(portTickType* xLastWakeTime, char ID, char )
+
+/* ================================== */
+
 
 // Automatic control
 void servoLeft(portTickType* xLastWakeTime, char upval, char downval)
