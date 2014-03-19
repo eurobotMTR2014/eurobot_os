@@ -504,19 +504,13 @@ void flapRightBall(portTickType* xLastWakeTime)
 
 /* ============== 2014 ============== */
 
-int static servoConvertAngleToHex(int angle){
+static int servoConvertAngleToHex(int angle){
     if(angle < 0 || angle > 300)
         return 0;
 
     return (1023/300) * angle;
 }
 
-/**
-  * @fn flapConfig
-  *
-  * Configure the angle limits of the flap
-  * @param Un peu perdu :( Doit savoir d'abord dans quel sens sera le servo
-  */
 
 void flapConfig(portTickType* xLastWakeTime, char ID, int angleDown, int angleUp){
     flapParam[0] = 0x06;
@@ -535,18 +529,25 @@ void flapConfig(portTickType* xLastWakeTime, char ID, int angleDown, int angleUp
     flapCmd(FLAP_ID, INST_WRITE, 5, xLastWakeTime);
 }
 
-/**
-  * @fn flapGoalAngle
-  *
-  */
-void flapGoalAngle(portTickType* xLastWakeTime, char ID, int angle){
+
+void flapGoalAngle(portTickType* xLastWakeTime, char ID, int angle, float speed){
     flapParam[0] = 0x1E;
     int angleGoal = servoConvertAngleToHex(angle);
 
     flapParam[1] = angleGoal & 0xFF;
     flapParam[2] = angleGoal >> 8;
 
-    flapCmd(FLAP_ID, INST_WRITE, 3, xLastWakeTime);
+    /* Setting the speed also */
+    int goalSpeed = (0x3FF * custom_abs(speed));
+
+    // If speed is < 0, servo will turn clowkwise 
+    if(speed < 0){
+        goalSpeed |= (0x1 << 10); // Set the 10th bit to 1 
+    }
+    flapParam[3] = goalSpeed & 0xFF; // "downval" : Bits 0->7
+    flapParam[4] = goalSpeed >> 8; // "upval" : Bits 8->15cm
+
+    flapCmd(FLAP_ID, INST_WRITE, 5, xLastWakeTime);
 }
 
 /* NOT OPERATIONAL YET ! */

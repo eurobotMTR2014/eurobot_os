@@ -558,6 +558,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
 
 void flapInit(portTickType* xLastWakeTime)
 {
+    /*
     char* msg;
     
     flapRightConfig(xLastWakeTime);
@@ -592,7 +593,20 @@ void flapInit(portTickType* xLastWakeTime)
 
     //vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
     //flapLeftDown(xLastWakeTime);
+    */
+
+
+
+    /* ====================== NEW ====================== */
+    flapConfig(xLastWakeTime, FLAP_ID, FLAP_LIMIT_DOWN, FLAP_LIMIT_UP);
+
+    flapGoalAngle(xLastWakeTime, FLAP_ID, 80, 0.3);
+    vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
+
+    flapGoalAngle(xLastWakeTime, FLAP_ID, 200, 0.3);
+
 }
+
 
 void servoInit(portTickType* xLastWakeTime)
 {
