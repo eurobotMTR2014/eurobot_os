@@ -175,6 +175,7 @@ static float walked_dist = 0;
 
 void intelligenceTask (void* pvParameters)
 {
+
     portTickType xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
 
@@ -185,6 +186,17 @@ void intelligenceTask (void* pvParameters)
 
     pln2("AI launched");
 
+    intel_initControl(INIT_1_X, INIT_1_Y, PI/2); // 610 , 220
+    getStatus();
+
+    ctrl_setNextGoalState(INIT_1_X, INIT_1_Y + 500.0, PI, 200, true);
+    ctrl_setNextGoalState(INIT_1_X + 500.0, INIT_1_Y + 500.0, PI, 200, true);
+    ctrl_setNextGoalState(INIT_1_X + 500.0, INIT_1_Y, PI, 200, true);
+    ctrl_setNextGoalState(INIT_1_X, INIT_1_Y, PI, 200, true);
+
+
+
+    /*
     initTasks();
     intel_initControl(INIT_1_X, INIT_1_Y, PI/2);
     getStatus();
@@ -238,6 +250,7 @@ void intelligenceTask (void* pvParameters)
         vTaskDelayUntil (&xLastWakeTime, (50 / portTICK_RATE_MS));
     }
 
+    */
     while(true);
 }
 

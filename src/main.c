@@ -443,6 +443,7 @@ void ROOTtask(void* pvParameters)
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
     servoInit(&xLastWakeTime);
 
+    //flapInit(&xLastWakeTime);
     
     vTaskDelayUntil (&xLastWakeTime, (300 / portTICK_RATE_MS));
 
@@ -598,12 +599,12 @@ void flapInit(portTickType* xLastWakeTime)
 
 
     /* ====================== NEW ====================== */
-    flapConfig(xLastWakeTime, FLAP_LIMIT_DOWN, FLAP_LIMIT_UP);
+    flapConfig(xLastWakeTime, 150 /*180°*/, 240 /*270°*/);
 
-    flapGoalAngle(xLastWakeTime, 80, 0.3);
+    flapGoalAngle(xLastWakeTime, 150, 0.3);
     vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
 
-    flapGoalAngle(xLastWakeTime, 200, 0.3);
+    flapGoalAngle(xLastWakeTime, 240, 0.3);
     vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
 
     flapDown(xLastWakeTime);

@@ -552,11 +552,11 @@ void flapGoalAngle(portTickType* xLastWakeTime, int angle, float speed){
 
 
 void flapDown(portTickType* xLastWakeTime){
-    flapGoalAngle(xLastWakeTime, 70, 0.5);
+    flapGoalAngle(xLastWakeTime, 170, 0.5);
 }
 
 void flapUp(portTickType* xLastWakeTime){
-    flapGoalAngle(xLastWakeTime, 240, 0.5);
+    flapGoalAngle(xLastWakeTime, 220, 0.5);
 }
 
 /* NOT OPERATIONAL YET ! */
