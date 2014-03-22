@@ -57,4 +57,40 @@ typedef PositionGoal_t
 /** Initialize the world */
 void init_world();
 
+/**
+ * @fn world_peek_next_goal()
+ * Returns a pointer to the first element of the goal buffer without removing it
+ * @return a pointer to the goal
+ * @note The caller is blocked till a value is available in the buffer
+ */
+const PositionGoal* world_peek_next_goal();
+
+/**
+ * @fn world_peek_next_goal()
+ * Returns a pointer to the first element of the goal buffer and removes it
+ * @return a pointer to the goal
+ * @note The caller is blocked till a value is available in the buffer
+ */
+PositionGoal* world_pick_next_goal();
+
+/**
+ * @fn world_put goal()
+ * Put a position goal in the goal buffer
+ * @param a pointer to a PositionGoal structure
+ * @note The caller is blocked till an empty slot is available in the buffer
+ */
+void world_put_goal(PositionGoal* pg);
+
+/**
+ * @fn world_goal_flush()
+ * Flush the goal buffer
+ */
+void world_goal_flush();
+
+/**
+ * @fn world_goal_remove_peek()
+ * Remove the first goal stored in the buffer
+ */
+void world_goal_remove_peek();
+
 #endif
