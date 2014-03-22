@@ -31,15 +31,21 @@ typedef struct World_t {
 	Encoder curr_right;
 	Encoder curr_left;
 
+	xSemaphoreHandle encoder_mutex;
 	
 	unsigned long sharp_vals[4]; // sharps measure buffers
 	unsigned long ultra_vals[4]; // ultrasound captors measure buffers
+
+	xSemaphoreHandle sharp_mutex;
+	xSemaphoreHandle ultra_mutex;
 
 	// robot state
 	float x; 		 // position of the robot
    	float y;         // position of the robot
    	float phi;       // angle of the robot
    	bool stop;       // true if the robot must stop
+
+   	xSemaphoreHandle state_mutex;
 
    	// goals
 	GoalsBuffer goals_buffer;
@@ -62,6 +68,10 @@ static void init_state();
  */
 static void init_goals_buffer();
 
+/**
+ * Initialize the captors related fields
+ */ 
+static void init_captors();
 /**
  * Resets counting semaphores og goal buffer
  */
@@ -91,6 +101,9 @@ static void init_encoders()
 	updateEncoder(&(world.curr_left));
 	updateEncoder(&(world.prev_right));
 	updateEncoder(&(world.curr_right));
+
+	// sets encoder mutex semaphore
+	world.encoder_mutex = xSemaphoreCreateMutex();
 }
 
 static void init_state()
@@ -98,8 +111,15 @@ static void init_state()
 	world.x = INIT_X_1;
 	world.y = INIT_Y_1;
 	world.stop = true;
+
+	world.state_mutex = xSemaphoreCreateMutex()
 }
 
+static void init_captors()
+{
+	world.sharp_mutex = xSemaphoreCreateMutex();
+	world.ultra_mutex = xSemaphoreCreateMutex();
+}
 
 static void init_goals_buffer()
 {
@@ -187,4 +207,31 @@ void world_goal_remove_peek()
 
 	xSemaphoreGive(gb->goals_mutex);
 	xSemaphoreGive(gb->empty_slot_count);
+}
+
+
+Coord world_get_coord()
+{	
+	Coord c;
+	
+	xSemaphoreTake(world.state_mutex);
+	c.x = world.x;
+	c.y = world.y;
+	xSemaphoreGive(world.state_mutex);
+
+	return c;
+}
+
+State world_get_state()
+{
+	State s;
+
+	xSemaphoreTake(world.state_mutex);
+	s.x = world.x;
+	s.y = world.y;
+	s.phi = world.phi;
+	s.stop = world.stop;
+	xSemaphoreGive(world.state_mutex);
+
+	return s;
 }
