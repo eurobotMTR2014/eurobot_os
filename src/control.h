@@ -14,7 +14,7 @@ typedef struct coordinate_t {
 /**
  * Defines the state of a robot. x, y are the absolute
  * coordinates, phi is the relative angle, and stop is
- * set to true if the robot is idle.
+ * set to true if the robot is idled.
  **/
 typedef struct state_t {
    float x;
