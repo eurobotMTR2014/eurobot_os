@@ -38,11 +38,11 @@ extern volatile bool force_angle;
 extern volatile float forced_angle_value;
 
 typedef struct Encoder_t {
-   int tickvalue;
-   portTickType time;
-   bool forward;
+   int tickvalue; // position at the last update
+   portTickType time; // time of the last update
+   bool forward; // true if the encoder goes forward
    //unsigned long velocity;
-   unsigned long ulBase;
+   unsigned long ulBase; // QEI peripheral base address
 } Encoder;
 
 typedef struct Objective_t {
@@ -75,7 +75,6 @@ static float u2;
 
 void removeCurrentGoalState();
 void updateState();
-void updateEncoder(Encoder* enc);
 void planner();
 void tracker(portTickType* xLastWakeTime);
 void turnToAngle(portTickType* xLastWakeTime,float forced_angle);
@@ -108,29 +107,6 @@ void controlTask (void* pvParameters)
    while(true);
 }
 
-//void turnToAngle(portTickType* xLastWakeTime, float forced_angle)
-//{
-//    float tmp = forced_angle - currentstate.phi + PI;
-//
-//    if (tmp > 2*PI)
-//        tmp -= 2*PI;
-//    else if (tmp < 0)
-//        tmp += 2*PI;
-//
-//    tmp -= PI;
-//
-//    if (tmp > 0)
-//    {
-//        servoLeft(xLastWakeTime, 0x04, 0xFF);
-//        servoRight(xLastWakeTime, 0x03, 0xFF);
-//    }
-//    else
-//    {
-//        servoLeft(xLastWakeTime, 0x03, 0xFF);
-//        servoRight(xLastWakeTime, 0x04, 0xFF);
-//    }
-//}
-
 void ctrl_initControl(float x, float y, float phi) {
    UARTprintf("Start control init.\n"); // %d = int, %u = uint.
    ctrl_resetState(x, y, phi, true);
@@ -146,7 +122,6 @@ void ctrl_initControl(float x, float y, float phi) {
 }
 
 void ctrl_refresh(portTickType* xLastWakeTime) {
-//    if (!stopping) { // if stopping == 0, so we're not stopping right now
       if ((firstgoal != nextgoals) && !currentstate.stop) {
          updateState(); // Calcule positon courante et angle courant
          planner();
@@ -156,11 +131,6 @@ void ctrl_refresh(portTickType* xLastWakeTime) {
          updateState();
          ctrl_stop(xLastWakeTime);
       }
-//   }
-//   else {
-//      updateState();
-//      ctrl_stop(xLastWakeTime);
-//   }
 }
 
 bool ctrl_restart(portTickType* xLastWakeTime) {
@@ -302,21 +272,20 @@ void updateState() {
    last_el.forward = el.forward;
    //last_el.velocity = el.velocity;
 
-
-
    //UARTprintf("LEFT : ");
    IntMasterDisable();
    updateEncoder(&el);
    updateEncoder(&er);
    cpu_tick = xTaskGetTickCount();
    IntMasterEnable();
+
+   // reverse value because left encoder turn backward when the robot goes forward
    el.tickvalue = 1023 - el.tickvalue;
    el.forward = !el.forward;
-   //UARTprintf("el = %d, ", (int) (el.tickvalue)); // %d = int, %u = uint. IT WORKS TILL HERE
-   //UARTprintf("er = %d\n", (int) (er.tickvalue)); // %d = int, %u = uint.
 
-   // even when on the reversed side.
-   int dtr;
+   // compute variation of rotation since last update
+   // even when on the reversed side. 
+   int dtr; // left encoder
    if ((er.forward && (er.tickvalue >= last_er.tickvalue)) ||
       (!er.forward && (er.tickvalue <= last_er.tickvalue))) {
       dtr = ((float) (er.tickvalue - last_er.tickvalue));
@@ -327,7 +296,7 @@ void updateState() {
    else {
       dtr = ((float) (er.tickvalue - (last_er.tickvalue + 1024)));
    }
-   int dtl;
+   int dtl; // right encoder
    if ((el.forward && (el.tickvalue >= last_el.tickvalue)) ||
       (!el.forward && (el.tickvalue <= last_el.tickvalue))) {
       dtl = ((float) (el.tickvalue - last_el.tickvalue));
@@ -397,9 +366,6 @@ void updateEncoder(Encoder* enc) {
    enc->time = xTaskGetTickCount();
    enc->tickvalue = (int) QEIPositionGet(enc->ulBase);
    enc->forward = (QEIDirectionGet(enc->ulBase) == (unsigned long) 1);
-   //enc->velocity = QEIVelocityGet(enc);
-
-//   UARTprintf("tickvalue = %d\n", (int) (enc->tickvalue)); // %d = int, %u = uint.
 }
 
 
@@ -509,3 +475,4 @@ char ctrl_getForward() {
    }
    return 0;
 }
+
