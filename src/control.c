@@ -148,7 +148,7 @@ void ctrl_initControl(float x, float y, float phi) {
 void ctrl_refresh(portTickType* xLastWakeTime) {
 //    if (!stopping) { // if stopping == 0, so we're not stopping right now
       if ((firstgoal != nextgoals) && !currentstate.stop) {
-         updateState();
+         updateState(); // Calcule positon courante et angle courant
          planner();
          tracker(xLastWakeTime);
       }

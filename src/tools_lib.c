@@ -512,7 +512,7 @@ static int servoConvertAngleToHex(int angle){
 }
 
 
-void flapConfig(portTickType* xLastWakeTime, char ID, int angleDown, int angleUp){
+void flapConfig(portTickType* xLastWakeTime, int angleDown, int angleUp){
     flapParam[0] = 0x06;
 
     int angleLimitUp = servoConvertAngleToHex(angleUp);
@@ -530,7 +530,7 @@ void flapConfig(portTickType* xLastWakeTime, char ID, int angleDown, int angleUp
 }
 
 
-void flapGoalAngle(portTickType* xLastWakeTime, char ID, int angle, float speed){
+void flapGoalAngle(portTickType* xLastWakeTime, int angle, float speed){
     flapParam[0] = 0x1E;
     int angleGoal = servoConvertAngleToHex(angle);
 
@@ -548,6 +548,15 @@ void flapGoalAngle(portTickType* xLastWakeTime, char ID, int angle, float speed)
     flapParam[4] = goalSpeed >> 8; // "upval" : Bits 8->15cm
 
     flapCmd(FLAP_ID, INST_WRITE, 5, xLastWakeTime);
+}
+
+
+void flapDown(portTickType* xLastWakeTime){
+    flapGoalAngle(xLastWakeTime, 70, 0.5);
+}
+
+void flapUp(portTickType* xLastWakeTime){
+    flapGoalAngle(xLastWakeTime, 240, 0.5);
 }
 
 /* NOT OPERATIONAL YET ! */
