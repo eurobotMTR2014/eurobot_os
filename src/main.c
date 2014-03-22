@@ -598,13 +598,19 @@ void flapInit(portTickType* xLastWakeTime)
 
 
     /* ====================== NEW ====================== */
-    flapConfig(xLastWakeTime, FLAP_ID, FLAP_LIMIT_DOWN, FLAP_LIMIT_UP);
+    flapConfig(xLastWakeTime, FLAP_LIMIT_DOWN, FLAP_LIMIT_UP);
 
-    flapGoalAngle(xLastWakeTime, FLAP_ID, 80, 0.3);
+    flapGoalAngle(xLastWakeTime, 80, 0.3);
     vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
 
-    flapGoalAngle(xLastWakeTime, FLAP_ID, 200, 0.3);
+    flapGoalAngle(xLastWakeTime, 200, 0.3);
+    vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
 
+    flapDown(xLastWakeTime);
+    vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
+
+    flapUp(xLastWakeTime);
+    vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
 }
 
 
