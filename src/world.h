@@ -45,7 +45,7 @@ typedef struct State_t {
 /**
  * holds a destination of the robot
  */
-typedef PositionGoal_t
+typedef struct PositionGoal_t
 {
 	float x; 		// final position
 	float y;		// final position
@@ -53,6 +53,10 @@ typedef PositionGoal_t
 	float k;        // curvature
 } PositionGoal;
 
+typedef struct Coord_t {
+   float x;
+   float y;
+} Coord;
 
 /** Initialize the world */
 void init_world();
@@ -92,5 +96,19 @@ void world_goal_flush();
  * Remove the first goal stored in the buffer
  */
 void world_goal_remove_peek();
+
+/**
+ * @fn world_get_coord()
+ * Returns the coordinates of the robot
+ * @return a Coord struct
+ */
+Coord world_get_coord();
+
+/**
+ * @fn world_get_state()
+ * Returns the state of the robot
+ * @return a State struct
+ */
+State world_get_state();
 
 #endif
