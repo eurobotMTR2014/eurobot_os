@@ -443,14 +443,14 @@ void ROOTtask(void* pvParameters)
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
     servoInit(&xLastWakeTime);
 
-    /*
+    
     vTaskDelayUntil (&xLastWakeTime, (300 / portTICK_RATE_MS));
 
     msg = "FIRE...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
     throwSpear();
-    */
+    
     
 
     if (ROBOT_team_choice)
