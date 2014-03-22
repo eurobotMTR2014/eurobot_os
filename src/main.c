@@ -447,6 +447,7 @@ void ROOTtask(void* pvParameters)
     
     vTaskDelayUntil (&xLastWakeTime, (300 / portTICK_RATE_MS));
 
+    // Throw a ball
     msg = "FIRE...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
