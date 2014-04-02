@@ -1,3 +1,4 @@
+// Just some Git test
 #pragma GCC diagnostic ignored "-Wchar-subscripts"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
@@ -447,6 +448,7 @@ void ROOTtask(void* pvParameters)
     
     vTaskDelayUntil (&xLastWakeTime, (300 / portTICK_RATE_MS));
 
+    // Throw a ball
     msg = "FIRE...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
