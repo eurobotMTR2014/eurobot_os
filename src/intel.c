@@ -178,13 +178,20 @@ void intelligenceTask (void* pvParameters)
 
     portTickType xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
+    char* msg = pvPortMalloc(sizeof(char) * 21);
+
+
+    msg = "AI before launched";
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
     while (!ROBOT_start)
     {
         vTaskDelayUntil (&xLastWakeTime, (10 / portTICK_RATE_MS));
     }
 
-    pln2("AI launched");
+    //pln2("AI launched");
+    msg = "AI launched";
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
     intel_initControl(INIT_1_X, INIT_1_Y, PI/2); // 610 , 220
     getStatus();
