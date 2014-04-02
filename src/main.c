@@ -436,11 +436,11 @@ void ROOTtask(void* pvParameters)
     /*
      * Et décommenter ça aussi !
      */
-     
+     /*
     msg = "Initializing flaps...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
     flapInit(&xLastWakeTime);
-    
+    */
     
     msg = "Initializing servos...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
@@ -541,7 +541,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
     }
     
     
-    flapCmdUnchecked(FLAP_ID, INST_PING, 0);
+    flapCmdUnchecked(2, INST_PING, 0);
     if (!flapCheck(xLastWakeTime))
     {
         ok = false;
@@ -549,6 +549,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
         msg = "Servo 2 PAS OK!";
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
+
     
 
     /*
