@@ -540,7 +540,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
     
-    
+    /*
     flapCmdUnchecked(2, INST_PING, 0);
     if (!flapCheck(xLastWakeTime))
     {
@@ -550,7 +550,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
 
-    
+    */
 
     /*
     flapCmdUnchecked(4, INST_PING, 0);
