@@ -1664,6 +1664,7 @@ void doSpline()
 
     Point* refs = splineRefs;
     Point* pts = splinePts;
+    
     genSpline(refs,pts,0.0,nbPts);
 
     unsigned int i = 0;
@@ -1677,7 +1678,7 @@ void doSpline()
         i = 1;
     }
 
-    float k = ksign*15 ;
+    float k = ksign*15;
     for (; i < (nbPts-1); ++i)
     {
         ctrl_setNextGoalState(pts[i].x, pts[i].y, 42, k, false);

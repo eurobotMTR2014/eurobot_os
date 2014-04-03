@@ -66,7 +66,14 @@ float custom_sqrt(float x)
     return b;
 }
 
-// Refs must be of size 4
+/**
+ * @fn genSpline
+ * Create a spline between the reference points 2 and 3 (4 ref. points needed).
+ * @param refs the reference points (array of size 4)
+ * @param out the ouput points generated (must be of size nbpts)
+ * @param t ???
+ * @param nbpts the number of points to output
+ */
 void genSpline(Point* refs, Point* out, float t, unsigned int nbpts)
 {
     Point P0 = refs[0];
@@ -75,7 +82,7 @@ void genSpline(Point* refs, Point* out, float t, unsigned int nbpts)
     Point P3 = refs[3];
 
     float s  = 0;
-    float s2 = 0;;
+    float s2 = 0;
     float s3 = 0;
 
     float interval = 1.0/((float)nbpts-1);
@@ -83,16 +90,16 @@ void genSpline(Point* refs, Point* out, float t, unsigned int nbpts)
     unsigned int i=0;
     for (; s <= 1; ++i)
     {
-        s2 = s*s;
-        s3 = s2*s;
+        s2 = s*s; // s^2
+        s3 = s2*s; // s^3
 
-        out[i].x = (P1.x) + (-t*(P0.x)+t*(P2.x))*(s) +
-                            (2*t*(P0.x)+(t-3)*(P1.x)+(3-2*t)*(P2.x)-t*(P3.x))*(s2) +
-                            (-t*(P0.x)+(2-t)*(P1.x)+(t-2)*(P2.x)+t*(P3.x))*(s3);
+        out[i].x = (P1.x) + (- (P0.x) + (P2.x)) * t * s  + 
+                            (2 * t * (P0.x) + (t-3) * (P1.x) + (3-2 * t) * (P2.x)- t * (P3.x)) * (s2)  + 
+                            (-t * (P0.x) + (2-t) * (P1.x) + (t-2) * (P2.x) + t * (P3.x)) * (s3);
 
-        out[i].y = (P1.y) + (-t*(P0.y)+t*(P2.y))*(s) +
-                            (2*t*(P0.y)+(t-3)*(P1.y)+(3-2*t)*(P2.y)-t*(P3.y))*(s2) +
-                            (-t*(P0.y)+(2-t)*(P1.y)+(t-2)*(P2.y)+t*(P3.y))*(s3);
+        out[i].y = (P1.y)  +  (-t * (P0.y) + t * (P2.y)) * (s)  + 
+                            (2 * t * (P0.y) + (t-3) * (P1.y) + (3-2 * t) * (P2.y)-t * (P3.y)) * (s2)  + 
+                            (-t * (P0.y) + (2-t) * (P1.y) + (t-2) * (P2.y) + t * (P3.y)) * (s3);
         s += interval;
     }
 
@@ -107,7 +114,7 @@ void genSpline(Point* refs, Point* out, float t, unsigned int nbpts)
 static unsigned long nextRand = 1;
 
 unsigned int myrand(void) {
-    nextRand = nextRand * 1103515245 + 12345;
+    nextRand = nextRand  *  1103515245 + 12345;
     return((unsigned)(nextRand/65536) % 32768);
 }
 void mysrand(unsigned seed) {

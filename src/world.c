@@ -11,8 +11,8 @@ typedef struct GoalsBuffer_t {
 	 									// of in == out then the buffer is either empty or full
 										// the counting semaphore allows to check emptiness and fullness
 	xSemaphoreHandle empty_slot_count,  // semaphore counts the empty slots
-					 filled_slot_count; // semaphore counts the filled slotes
-	xSemaphoreHandle goals_mutex; 		// semaphore ensure a mutual exclusion for accessing the buffer
+					 filled_slot_count; // semaphore counts the filled slots
+	xSemaphoreHandle goals_mutex; 		// semaphore ensures a mutual exclusion for accessing the buffer
 	PositionGoal goals[POSITION_GOAL_BUF_SIZE]; // buffer
 } GoalsBuffer;
 
