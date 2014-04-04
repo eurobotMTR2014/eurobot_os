@@ -546,7 +546,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
     }
     
 
-    flapCmdUnchecked(2, INST_PING, 0);
+    flapCmdUnchecked(3, INST_PING, 0);
 
     if (!flapCheck(xLastWakeTime))
     {
