@@ -130,7 +130,7 @@ char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* buffe
         {
             *rx_ms_wait = UART_RX_MS_WAIT;
             pln2("SERVO DOWN!!!");
-            UARTprintf("SERVO NOT RESPONDING: %d", bufferRx[2]);
+            UARTprintf("SERVO NOT RESPONDING: %d ", bufferRx[2]);
             return SERVO_NOT_RESP;
         }
 
@@ -191,7 +191,7 @@ char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* buffe
         {
             *rx_ms_wait = UART_RX_MS_WAIT;
             pln2("SERVO DOWN!!!");
-            UARTprintf("SERVO NOT REPONDING: %d", bufferRx[2]);
+            UARTprintf("SERVO NOT REPONDING: %d ", bufferRx[2]);
             return SERVO_NOT_RESP;
         }
 
@@ -336,6 +336,29 @@ void servoRxBufferClrRAW(unsigned long base)
     }
 }
 
+/* ======== Move the robot ======== */
+
+void robotForward(portTickType* xLastWakeTime, unsigned long duration){
+    servoSetSpeed(xLastWakeTime, 0, -0.4);
+    servoSetSpeed(xLastWakeTime, 1, 0.4);
+
+    servoSync();
+
+    vTaskDelayUntil (xLastWakeTime, (duration / portTICK_RATE_MS));
+    servoSTOP();
+}
+
+void robotBackward(portTickType* xLastWakeTime, unsigned long duration){
+    servoSetSpeed(xLastWakeTime, 0, 0.4);
+    servoSetSpeed(xLastWakeTime, 1, -0.4);
+
+    servoSync();
+
+    vTaskDelayUntil (xLastWakeTime, (duration / portTICK_RATE_MS));
+    servoSTOP();
+}
+
+/* ================================ */
     
 char servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed){
    char data[2]; // Contains the data to send (2 * 8 bits)
@@ -349,7 +372,6 @@ char servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed){
 
    return servoForward(xLastWakeTime, ID, data[1], data[0]);
 }
-
 
 char servoForward(portTickType* xLastWakeTime, char ID, char upval, char downval)
 {
@@ -565,6 +587,7 @@ void flapUp(portTickType* xLastWakeTime){
 
 
 // Automatic control
+/*
 void servoLeft(portTickType* xLastWakeTime, char upval, char downval)
 {
     servoParam[0] = 0x20;
@@ -591,6 +614,16 @@ void servoRight(portTickType* xLastWakeTime, char upval, char downval)
         servoCmd(SERVO_RIGHT_ID, INST_REG_WRITE, 3);
         ok = servoCheck(xLastWakeTime);
     } while (!ok);
+}
+
+*/
+
+void servoLeft(portTickType* xLastWakeTime, char upval, char downval){
+    servoSetSpeed(xLastWakeTime, 1, 0.4);
+}
+
+void servoRight(portTickType* xLastWakeTime, char upval, char downval){
+    servoSetSpeed(xLastWakeTime, 0, -0.4);
 }
 
 void servoSync()
@@ -621,24 +654,22 @@ float sharp_convert(unsigned long value)
 
 
 
-void throwSpear(portTickType* xLastWakeTime, unsigned long duration){
+void throwSpear(portTickType* xLastWakeTime){
 
     GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_ON);
 
     //for (int i = 0; i < 700000; ++i); // Wait aporox 1 sec
 
-    vTaskDelayUntil (xLastWakeTime, (duration/ portTICK_RATE_MS));
+    vTaskDelayUntil (xLastWakeTime, (150/ portTICK_RATE_MS));
 
     GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_OFF);
 }
 
 
 void throwSomeSpears(portTickType* xLastWakeTime, unsigned int num, unsigned long wait){
-    unsigned long duration = 50;
 
     for(unsigned int i = 0 ; i < num ; ++i){
-        throwSpear(xLastWakeTime, duration);
-        duration += 50;
+        throwSpear(xLastWakeTime);
         vTaskDelayUntil (xLastWakeTime, (wait / portTICK_RATE_MS));
     }
 }

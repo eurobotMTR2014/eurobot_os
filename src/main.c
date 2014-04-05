@@ -96,8 +96,8 @@ int main (void)
 
     xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
     //xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
-    //xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
-    //xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
 
     pln("Launching scheduler");
     vTaskStartScheduler();
@@ -419,16 +419,11 @@ void ROOTtask(void* pvParameters)
 
     msg = "Checking servo status";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
-    /*
-    do{
-        flapCmdUnchecked(2, INST_PING, 0);
-        vTaskDelayUntil (&xLastWakeTime, (200 / portTICK_RATE_MS));
-    }while(1);
-    */
+
     /*
      * Note : Changer checkServoStatus pour intégrer le flap avant les tests!!!!
      */
-     /*
+    
     if (!checkServoStatus(&xLastWakeTime))
     {
         msg = "Error during check";
@@ -438,33 +433,38 @@ void ROOTtask(void* pvParameters)
         while (true)
             vTaskDelayUntil (&xLastWakeTime, (10000 / portTICK_RATE_MS));
     }
-    */
-
-    /*
-     * Et décommenter ça aussi !
-     */
-     
-     /*
+        
     msg = "Initializing flaps...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
-    flapInit(&xLastWakeTime);
+    //flapInit(&xLastWakeTime);
     
     
     msg = "Initializing servos...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
-    servoInit(&xLastWakeTime);
-    */
+    //servoInit(&xLastWakeTime);
+    
     
 
     vTaskDelayUntil (&xLastWakeTime, (300 / portTICK_RATE_MS));
 
     // Throw a ball
+    /*
     msg = "FIRE...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
+    */
+    //throwSomeSpears(&xLastWakeTime, 6, 3000);
 
-    //throwSpear(&xLastWakeTime);
-    throwSomeSpears(&xLastWakeTime, 6, 3000);
-
+    // Test throw + move
+    /*
+    throwSomeSpears(&xLastWakeTime, 2, 1500);
+    robotForward(&xLastWakeTime, 1000);
+    vTaskDelayUntil (&xLastWakeTime, (1000 / portTICK_RATE_MS));
+    throwSomeSpears(&xLastWakeTime, 2, 1500);
+    robotForward(&xLastWakeTime, 1000);
+    vTaskDelayUntil (&xLastWakeTime, (1000 / portTICK_RATE_MS));
+    throwSomeSpears(&xLastWakeTime, 2, 1500);
+    robotForward(&xLastWakeTime, 1000);
+    */
     /*    
 
     if (ROBOT_team_choice)
@@ -496,16 +496,18 @@ void ROOTtask(void* pvParameters)
     
     seedRandomGen();
 
-    vTaskDelayUntil (&xLastWakeTime, (2000 / portTICK_RATE_MS));
-    ROBOT_start = true; // Go!
+    
 */
+    //vTaskDelayUntil (&xLastWakeTime, (2000 / portTICK_RATE_MS));
+    ROBOT_start = true; // Go!
+
     msg = "Playing!";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
     xLastWakeTime = xTaskGetTickCount();
     vTaskDelayUntil (&xLastWakeTime, (75000 / portTICK_RATE_MS)); // Game happens here
     game_nearly_stopped = true;
     vTaskDelayUntil (&xLastWakeTime, (15000 / portTICK_RATE_MS));
-    /*
+    
     intelStop = true;
     controlStop = true;
 
@@ -523,7 +525,7 @@ void ROOTtask(void* pvParameters)
         servoSTOP();
         flapSTOP();
     } // Game over
-    */
+    
     while(true){}
 }
 
@@ -553,6 +555,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
     }
     
     
+    /*
     flapCmdUnchecked(3, INST_PING, 0);
 
     if (!flapCheck(xLastWakeTime))
@@ -562,18 +565,8 @@ bool checkServoStatus(portTickType* xLastWakeTime)
         msg = "Flap PAS OK!";
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
+    */
     
-
-    
-
-    /*
-    flapCmdUnchecked(4, INST_PING, 0);
-    if (!flapCheck(xLastWakeTime))
-    {
-        ok = false;
-        pln2("Servo 4 error");
-    }*/
-
     return ok;
 }
 

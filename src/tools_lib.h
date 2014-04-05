@@ -201,6 +201,10 @@ char servoBackward(portTickType* xLastWakeTime, char ID, char upval, char downva
 char servoForwardFULL(portTickType* xLastWakeTime, char ID);
 char servoBackwardFULL(portTickType* xLastWakeTime, char ID);
 
+// Robot (entire robot) control
+void robotForward(portTickType* xLastWakeTime, unsigned long duration);
+void robotBackward(portTickType* xLastWakeTime, unsigned long duration);
+
 void servoFreeWheel();
 void servoSTOP();
 void flapSTOP();
@@ -267,7 +271,7 @@ float sharp_convert(unsigned long value);
  * @fn throwSpear
  * Throw a spear (ball)
  */
-void throwSpear(portTickType* xLastWakeTime, unsigned long time);
+void throwSpear(portTickType* xLastWakeTime);
 
 /**
  * @fn throwSomeSpears
