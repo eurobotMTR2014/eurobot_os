@@ -267,13 +267,13 @@ float sharp_convert(unsigned long value);
  * @fn throwSpear
  * Throw a spear (ball)
  */
-void throwSpear();
+void throwSpear(portTickType* xLastWakeTime, unsigned long time);
 
 /**
  * @fn throwSomeSpears
  * Throw 'num' spears (balls) spaced out 'wait' ms
  */
-void throwSomeSpears(portTickType* xLastWakeTime, unsigned long num, unsigned long wait);
+void throwSomeSpears(portTickType* xLastWakeTime, unsigned int num, unsigned long wait);
 
 
 //Broadcast

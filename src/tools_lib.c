@@ -508,7 +508,7 @@ static int servoConvertAngleToHex(int angle){
     if(angle < 0 || angle > 300)
         return 0;
 
-    return (1023/300) * angle;
+    return (1023/300) * angle; // 1023 : Valeur max en hexadécimal - datasheet p16
 }
 
 
@@ -526,7 +526,7 @@ void flapConfig(portTickType* xLastWakeTime, int angleDown, int angleUp){
     flapParam[3] = angleLimitUp & 0xFF;
     flapParam[4] = angleLimitUp >> 8;
 
-    flapCmd(FLAP_ID, INST_WRITE, 5, xLastWakeTime);
+    flapCmdUnchecked(FLAP_ID, INST_WRITE, 5);
 }
 
 
@@ -547,16 +547,16 @@ void flapGoalAngle(portTickType* xLastWakeTime, int angle, float speed){
     flapParam[3] = goalSpeed & 0xFF; // "downval" : Bits 0->7
     flapParam[4] = goalSpeed >> 8; // "upval" : Bits 8->15cm
 
-    flapCmd(FLAP_ID, INST_WRITE, 5, xLastWakeTime);
+    flapCmdUnchecked(FLAP_ID, INST_WRITE, 5);
 }
 
 
 void flapDown(portTickType* xLastWakeTime){
-    flapGoalAngle(xLastWakeTime, 170, 0.5);
+    flapGoalAngle(xLastWakeTime, 60, 0.5);
 }
 
 void flapUp(portTickType* xLastWakeTime){
-    flapGoalAngle(xLastWakeTime, 220, 0.5);
+    flapGoalAngle(xLastWakeTime, 150, 0.5);
 }
 
 /* NOT OPERATIONAL YET ! */
@@ -621,21 +621,24 @@ float sharp_convert(unsigned long value)
 
 
 
-void throwSpear(){
+void throwSpear(portTickType* xLastWakeTime, unsigned long duration){
 
     GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_ON);
 
-    for (int i = 0; i < 1000000; ++i); // Wait aporox 1 sec
+    //for (int i = 0; i < 700000; ++i); // Wait aporox 1 sec
+
+    vTaskDelayUntil (xLastWakeTime, (duration/ portTICK_RATE_MS));
 
     GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_OFF);
 }
 
 
-void throwSomeSpears(portTickType* xLastWakeTime, unsigned long num, unsigned long wait){
-    
-    for(unsigned int i = 0 ; i < num ; ++i){
-        throwSpear();
+void throwSomeSpears(portTickType* xLastWakeTime, unsigned int num, unsigned long wait){
+    unsigned long duration = 50;
 
+    for(unsigned int i = 0 ; i < num ; ++i){
+        throwSpear(xLastWakeTime, duration);
+        duration += 50;
         vTaskDelayUntil (xLastWakeTime, (wait / portTICK_RATE_MS));
     }
 }
