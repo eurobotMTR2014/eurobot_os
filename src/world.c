@@ -299,7 +299,7 @@ void world_update_state()
 	// save current encoder data in prev encoder structures
 	xSemaphoreTake(world.encoder_mutex, portMAX_DELAY);
 	copy_encoder(&(world.curr_left), &(world.prev_left));
-	copy_encoder(&(world.curr_right), &(world.curr_left));
+	copy_encoder(&(world.curr_right), &(world.prev_right));
 	xSemaphoreGive(world.encoder_mutex);
 
 	// update encoder values
@@ -322,5 +322,8 @@ void world_update_state()
 	}
 	world.x += ds.x;
 	world.y += ds.y;
+
+	UARTprintf("x : %d | y : %d | phi : %d\n", (int) world.x, (int) world.y, (int) world.phi);
+
 	xSemaphoreGive(world.state_mutex);
 }
