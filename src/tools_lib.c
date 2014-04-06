@@ -380,13 +380,13 @@ char servoForward(portTickType* xLastWakeTime, char ID, char upval, char downval
     servoParam[2] = upval;
     servoCmd(ID, INST_REG_WRITE, 3); // CAUTION ! 'REG_' added for tests
 
-    char rval = servoListen(xLastWakeTime);
+    //char rval = servoListen(xLastWakeTime);
     /*if (rval != SERVO_RECEIVED_OK)
         UARTprintf("Servo %d error: %d\n", servoBufferTx[2], rval);
     if (!servoRcvStatusOK())
         UARTprintf("Reception error: %d\n", *servoRxStatus);*/
 
-    return rval;
+    return 0;
 }
 
 char servoBackward(portTickType* xLastWakeTime, char ID, char upval, char downval)
@@ -587,19 +587,23 @@ void flapUp(portTickType* xLastWakeTime){
 
 
 // Automatic control
-/*
+
 void servoLeft(portTickType* xLastWakeTime, char upval, char downval)
 {
     servoParam[0] = 0x20;
     servoParam[1] = downval;
     servoParam[2] = upval;
 
-    bool ok;
-    do
-    {
-        servoCmd(SERVO_LEFT_ID, INST_REG_WRITE, 3);
-        ok = servoCheck(xLastWakeTime);
-    } while (!ok);
+   //servoCmd(SERVO_LEFT_ID, INST_REG_WRITE, 3);
+    //UARTprintf("servoLeft %x & %x\n", upval, downval);
+
+    //bool ok;
+    //do
+    //{
+        servoCmd(1, INST_REG_WRITE, 3);
+      //  ok = servoCheck(xLastWakeTime);
+    //} while (!ok);
+    
 }
 
 void servoRight(portTickType* xLastWakeTime, char upval, char downval)
@@ -608,23 +612,36 @@ void servoRight(portTickType* xLastWakeTime, char upval, char downval)
     servoParam[1] = downval;
     servoParam[2] = upval ^ 0x04;
 
-    bool ok;
-    do
-    {
-        servoCmd(SERVO_RIGHT_ID, INST_REG_WRITE, 3);
-        ok = servoCheck(xLastWakeTime);
-    } while (!ok);
+    //servoCmd(SERVO_RIGHT_ID, INST_REG_WRITE, 3);
+    //UARTprintf("servoRight %x & %x\n", upval, downval);
+    
+    //bool ok;
+    //do
+    //{
+        servoCmd(0, INST_REG_WRITE, 3);
+      //  ok = servoCheck(xLastWakeTime);
+    //} while (!ok);
+    
 }
 
-*/
 
+
+/*
 void servoLeft(portTickType* xLastWakeTime, char upval, char downval){
-    servoSetSpeed(xLastWakeTime, 1, 0.4);
+    if(upval == 0x00 && downval == 0x00)
+        servoSetSpeed(xLastWakeTime, 1, 0);
+    else
+        servoSetSpeed(xLastWakeTime, 1, 0.4);
 }
 
 void servoRight(portTickType* xLastWakeTime, char upval, char downval){
-    servoSetSpeed(xLastWakeTime, 0, -0.4);
+    if(upval == 0x00 && downval == 0x00)
+        servoSetSpeed(xLastWakeTime, 0, 0);
+    else
+        servoSetSpeed(xLastWakeTime, 0, -0.4);
 }
+*/
+
 
 void servoSync()
 {

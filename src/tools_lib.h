@@ -222,7 +222,6 @@ void flapRightBall(portTickType* xLastWakeTime);
 
 /* ============================= 2014 ============================= */
 
-
 /**
   * @fn flapConfig
   * Configure the angle limits of the flap
