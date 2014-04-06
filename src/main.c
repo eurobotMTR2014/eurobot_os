@@ -96,8 +96,8 @@ int main (void)
 
     xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
     //xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
-    xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
-    xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    //xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    //xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
 
     pln("Launching scheduler");
     vTaskStartScheduler();
@@ -613,12 +613,21 @@ void servoInit(portTickType* xLastWakeTime)
 
     servoSetSpeed(xLastWakeTime, 0, -0.5);
     servoSetSpeed(xLastWakeTime, 1, 0.5);
+
+    servoSync();
+
+    vTaskDelayUntil(xLastWakeTime, (1000 / portTICK_RATE_MS));
+
+    /* Demi tour */
+    servoSetSpeed(xLastWakeTime, 0, 0.5);
+    servoSetSpeed(xLastWakeTime, 1, 0.5);
+
     //servoBackwardFULL(xLastWakeTime, 0); // Avant, c'étati 1
     //servoForwardFULL(xLastWakeTime, 1); // Avant, c'était 2
 
     servoSync();
 
-    vTaskDelayUntil (xLastWakeTime, (300 / portTICK_RATE_MS));
+    vTaskDelayUntil (xLastWakeTime, (3000 / portTICK_RATE_MS));
     servoSTOP();
 }
 
