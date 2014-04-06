@@ -7,7 +7,7 @@
    #define GOALS_POOL 500
 #endif
 #ifndef INTER_WHEEL
-   #define INTER_WHEEL 258.0
+   #define INTER_WHEEL 257.0
 #endif
 #ifndef WHEEL_DIAM
    #define WHEEL_DIAM 59.0
