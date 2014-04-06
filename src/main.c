@@ -97,8 +97,8 @@ int main (void)
     xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
     xTaskCreate(odometryTask, (signed char*) "odometryTask", 1000, NULL, (tskIDLE_PRIORITY + 4), NULL);
     //xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
-    xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
-    xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    //TaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    //xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
 
     pln("Launching scheduler");
     vTaskStartScheduler();
@@ -512,6 +512,7 @@ void ROOTtask(void* pvParameters)
     msg = "Playing!";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
     xLastWakeTime = xTaskGetTickCount();
+
     vTaskDelayUntil (&xLastWakeTime, (75000 / portTICK_RATE_MS)); // Game happens here
     game_nearly_stopped = true;
     vTaskDelayUntil (&xLastWakeTime, (15000 / portTICK_RATE_MS));

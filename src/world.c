@@ -245,7 +245,7 @@ void world_goal_remove_peek()
 bool world_goal_isempty()
 {
 	xSemaphoreTake(world.goals_buffer.goals_mutex, portMAX_DELAY);
-	bool ret = (in == out) && (xSemaphoreTake(world.goals_buffer.filled_slot_count, (portTickType) 10) == pdFALSE);
+	bool ret = (world.goals_buffer.in == world.goals_buffer.out) && (xSemaphoreTake(world.goals_buffer.filled_slot_count, (portTickType) 10) == pdFALSE);
 	xSemaphoreGive(world.goals_buffer.goals_mutex);
 	return ret;
 }
@@ -253,7 +253,7 @@ bool world_goal_isempty()
 bool world_goal_isfull()
 {
 	xSemaphoreTake(world.goals_buffer.goals_mutex, portMAX_DELAY);
-	bool ret = (in == out) && (xSemaphoreTake(world.goals_buffer.empty_slot_count, (portTickType) 10) == pdFALSE);
+	bool ret = (world.goals_buffer.in == world.goals_buffer.out) && (xSemaphoreTake(world.goals_buffer.empty_slot_count, (portTickType) 10) == pdFALSE);
 	xSemaphoreGive(world.goals_buffer.goals_mutex);
 	return ret;
 }
@@ -268,7 +268,7 @@ void world_add_goal(float x, float y, float phi, float k, bool stop)
    next.k = k;
    next.stop = stop;
 
-   world_put_goal(next);
+   world_goal_put(next);
 }
 
 Coord world_get_coord()
@@ -357,7 +357,7 @@ void world_update_state()
 	world.x += ds.x;
 	world.y += ds.y;
 
-	//UARTprintf("x : %d | y : %d | phi : %d\n", (int) world.x, (int) world.y, (int) (world.phi*1000));
+	UARTprintf("x : %d | y : %d | phi : %d\n", (int) world.x, (int) world.y, (int) (world.phi*1000));
 
 	xSemaphoreGive(world.state_mutex);
 
