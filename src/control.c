@@ -117,7 +117,7 @@ void ctrl_initControl(float x, float y, float phi) {
 */
 
 void ctrl_refresh(portTickType* xLastWakeTime) {
-      if (goals_full_or_empty() || !world_get_stop_state()) {
+      if (!goals_full_or_empty() && !world_get_stop_state()) {
          //world_update_state(); // Calcule positon courante et angle courant
          planner();
          tracker(xLastWakeTime);
