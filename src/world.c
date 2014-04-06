@@ -11,8 +11,8 @@ typedef struct GoalsBuffer_t {
 	 									// of in == out then the buffer is either empty or full
 										// the counting semaphore allows to check emptiness and fullness
 	xSemaphoreHandle empty_slot_count,  // semaphore counts the empty slots
-					 filled_slot_count; // semaphore counts the filled slotes
-	xSemaphoreHandle goals_mutex; 		// semaphore ensure a mutual exclusion for accessing the buffer
+					 filled_slot_count; // semaphore counts the filled slots
+	xSemaphoreHandle goals_mutex; 		// semaphore ensures a mutual exclusion for accessing the buffer
 	PositionGoal goals[POSITION_GOAL_BUF_SIZE]; // buffer
 } GoalsBuffer;
 
@@ -135,30 +135,30 @@ static void reset_goal_buffer_sem()
 	world.goals_buffer.filled_slot_count = xSemaphoreCreateCounting(POSITION_GOAL_BUF_SIZE, 0);
 }
 
-const PositionGoal* world_peek_next_goal()
+PositionGoal world_peek_next_goal()
 {
 	GoalsBuffer* gb = &(world.goals_buffer);
-	PositionGoal* pg;
+	PositionGoal pg;
 	
 	xSemaphoreTake(gb->filled_slot_count, portMAX_DELAY); // waits for data in the buffer
 	xSemaphoreTake(gb->goals_mutex); // mutex
 
-	pg = &(gb->goals[gb->out]);
+	pg = gb->goals[gb->out];
 
 	xSemaphoreGive(gb->goals_mutex);
 
 	return pg;
 }
 
-PositionGoal* world_pick_next_goal()
+PositionGoal world_pick_next_goal()
 {
 	GoalsBuffer* gb = &(world.goals_buffer);
-	PositionGoal* pg;
+	PositionGoal pg;
 	
 	xSemaphoreTake(gb->filled_slot_count, portMAX_DELAY); // waits for data in the buffer
 	xSemaphoreTake(gb->goals_mutex); // mutex
 
-	pg = &(gb->goals[gb->out]);
+	pg = gb->goals[gb->out];
 	gb->out = (gb->out + 1) % POSITION_GOAL_BUF_SIZE;
 
 	xSemaphoreGive(gb->goals_mutex);
@@ -167,7 +167,7 @@ PositionGoal* world_pick_next_goal()
 	return pg;
 }
 
-void world_put_goal(PositionGoal* pg)
+void world_put_goal(PositionGoal pg)
 {
 	GoalsBuffer* gb = &(world.goals_buffer);
 
@@ -234,4 +234,14 @@ State world_get_state()
 	xSemaphoreGive(world.state_mutex);
 
 	return s;
+}
+
+void world_set_state(State s)
+{
+	xSemaphoreTake(world.state_mutex);
+	world.x = s.x;
+	world.y = s.y;
+	world.phi = s.phi;
+	world.stop = s.stop;
+	xSemaphoreGive(world.state_mutex);
 }

@@ -111,4 +111,11 @@ Coord world_get_coord();
  */
 State world_get_state();
 
+/**
+ * @fn world_set_state()
+ * Set the state of the robot
+ * @param s the new state of the robot             
+ */
+void world_set_state(State s);
+
 #endif

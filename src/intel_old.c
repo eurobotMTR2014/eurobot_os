@@ -178,17 +178,33 @@ void intelligenceTask (void* pvParameters)
 
     portTickType xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
+    char* msg = pvPortMalloc(sizeof(char) * 21);
+
+
+    msg = "AI before launched";
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
     while (!ROBOT_start)
     {
         vTaskDelayUntil (&xLastWakeTime, (10 / portTICK_RATE_MS));
     }
 
-    pln2("AI launched");
+    //pln2("AI launched");
+    msg = "AI launched";
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
+
+    vTaskDelayUntil (&xLastWakeTime, (1000 / portTICK_RATE_MS));
 
     intel_initControl(INIT_1_X, INIT_1_Y, PI/2); // 610 , 220
     getStatus();
 
+    initTasks();
+    intel_initControl(INIT_1_X, INIT_1_Y, PI/2);
+    getStatus();
+
+    setStrategy();
+
+    ctrl_initControl(INIT_1_X, INIT_1_Y, PI/2);
     ctrl_setNextGoalState(INIT_1_X, INIT_1_Y + 500.0, PI, 200, true);
     ctrl_setNextGoalState(INIT_1_X + 500.0, INIT_1_Y + 500.0, PI, 200, true);
     ctrl_setNextGoalState(INIT_1_X + 500.0, INIT_1_Y, PI, 200, true);
@@ -196,12 +212,7 @@ void intelligenceTask (void* pvParameters)
 
 
 
-    /*
-    initTasks();
-    intel_initControl(INIT_1_X, INIT_1_Y, PI/2);
-    getStatus();
-
-    setStrategy();
+    /* ========================== */
 //    ctrl_initControl(610, 220, PI/2);
 //    ctrl_setNextGoalState(200, 1500, 42, 200, false);
 //    ctrl_setNextGoalState(400, 1500, 42, -200, false);
@@ -210,6 +221,9 @@ void intelligenceTask (void* pvParameters)
 //    ctrl_setNextGoalState(1000, 100, 42, 170, false);
 //    ctrl_setNextGoalState(1000, 1500, 42, 170, true);
 //    ctrl_restart(xLastWakeTime);
+    /* ========================== */
+
+
 
     intel_restart(&xLastWakeTime);
 
@@ -250,7 +264,6 @@ void intelligenceTask (void* pvParameters)
         vTaskDelayUntil (&xLastWakeTime, (50 / portTICK_RATE_MS));
     }
 
-    */
     while(true);
 }
 
@@ -1664,7 +1677,6 @@ void doSpline()
 
     Point* refs = splineRefs;
     Point* pts = splinePts;
-    
     genSpline(refs,pts,0.0,nbPts);
 
     unsigned int i = 0;
@@ -1678,7 +1690,7 @@ void doSpline()
         i = 1;
     }
 
-    float k = ksign*15;
+    float k = ksign*15 ;
     for (; i < (nbPts-1); ++i)
     {
         ctrl_setNextGoalState(pts[i].x, pts[i].y, 42, k, false);
