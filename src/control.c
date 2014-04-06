@@ -7,13 +7,13 @@
    #define GOALS_POOL 500
 #endif
 #ifndef INTER_WHEEL
-   #define INTER_WHEEL 280.0
+   #define INTER_WHEEL 357.0 // Changé! 280 -> 357
 #endif
 #ifndef WHEEL_DIAM
    #define WHEEL_DIAM 59.0
 #endif
 #ifndef ENC_TRNSF
-   #define ENC_TRNSF (WHEEL_DIAM*PI)/(2 * 1024.0 * (36.0/20.0))
+   #define ENC_TRNSF (WHEEL_DIAM*PI)/(2 * 1024.0 * (36.0/22.0)) // Changé 20 -> 22
 #endif
 #ifndef EPSILON
    #define EPSILON 25.0 // e where we say we're at the goal.
@@ -27,8 +27,8 @@
 #endif
 #ifdef CONTROL_TRICK_ENABLE
    #define K 70 //Parameter to tweak! I might even put it into a variable, maybe. Perhaps. Mayhaps.
+// K << : Trajectoire smooth et lisse (grande courbure) ; K >> : Trajectoire dure
 #endif
-
 // UARTprintf("Servo Protocol error: %d\n", rval); // %d = int, %u = uint.
 //             UARTprintf("Servo Protocol error: %d\n", (int) (rval * 1000.0)); // Where rval is float.
 
@@ -110,6 +110,9 @@ void controlTask (void* pvParameters)
 void ctrl_initControl(float x, float y, float phi) {
    UARTprintf("Start control init.\n"); // %d = int, %u = uint.
    ctrl_resetState(x, y, phi, true);
+   
+
+   /* !!! QEI0 -> QEI1 */ // Removed changement
    er.ulBase = QEI0_BASE;
    updateEncoder(&er);
    last_er.ulBase = QEI0_BASE;
@@ -118,6 +121,7 @@ void ctrl_initControl(float x, float y, float phi) {
    updateEncoder(&el);
    last_el.ulBase = QEI1_BASE;
    updateEncoder(&last_el);
+
    UARTprintf("Done control init.\n"); // %d = int, %u = uint.
 }
 
@@ -128,6 +132,12 @@ void ctrl_refresh(portTickType* xLastWakeTime) {
          tracker(xLastWakeTime);
       }
       else {
+         /* DEBUG
+         if(firstgoal == nextgoals)
+            UARTprintf("firstgoal != nextgoals\n");
+         else if(currentstate.stop)
+            UARTprintf("!currentstate.stop\n");
+         */
          updateState();
          ctrl_stop(xLastWakeTime);
       }
@@ -206,13 +216,13 @@ void ctrl_stop(portTickType* xLastWakeTime) {
       currentstate.stop = true;
       IntMasterEnable();
       for (int i = 0; i < 3; i++){
-          UARTprintf("SERVO 1\n");
+         //UARTprintf("SERVO 1\n");
          servoLeft(xLastWakeTime, 0x00, 0x00);
-         UARTprintf("SERVO 2\n");
+         //UARTprintf("SERVO 2\n");
          servoRight(xLastWakeTime, 0x00, 0x00);
-         UARTprintf("SERVO 3\n");
+         //UARTprintf("SERVO 3\n");
          servoSync();
-         UARTprintf("SERVO 4\n");
+         //UARTprintf("SERVO 4\n");
       }
 //   }
 }
@@ -222,11 +232,13 @@ const state* ctrl_getCurrentState() {
 }
 
 
+
 /**
  * Adds a given state to the desired points. REMEMBER phi has to be 42 in most cases (if one want to reach it the fastest possible).
  **/
 void ctrl_setNextGoalState(float x, float y, float phi, float k, bool stop) {
-    //UARTprintf("Goal: %d;%d  %d/%d\n",(int)x,(int)y,(int)k,stop);
+    UARTprintf("Goal: %d;%d  %d/%d\n",(int)x,(int)y,(int)k,stop);
+    UARTprintf("firstgoal = %d, nextgoals = %d\n", firstgoal, nextgoals);
     Objective* d = &goals[nextgoals];
    if (phi == 42) {
       d->x = x;
@@ -283,30 +295,41 @@ void updateState() {
    el.tickvalue = 1023 - el.tickvalue;
    el.forward = !el.forward;
 
+
    // compute variation of rotation since last update
    // even when on the reversed side. 
    int dtr; // left encoder
    if ((er.forward && (er.tickvalue >= last_er.tickvalue)) ||
-      (!er.forward && (er.tickvalue <= last_er.tickvalue))) {
+      (!er.forward && (er.tickvalue <= last_er.tickvalue))) 
+   {
       dtr = ((float) (er.tickvalue - last_er.tickvalue));
    }
-   else if (er.forward) {
+   else if (er.forward) 
+   {
       dtr = ((float) ((er.tickvalue + 1024) - last_er.tickvalue));
    }
-   else {
+   else 
+   {
       dtr = ((float) (er.tickvalue - (last_er.tickvalue + 1024)));
    }
+
    int dtl; // right encoder
+
    if ((el.forward && (el.tickvalue >= last_el.tickvalue)) ||
-      (!el.forward && (el.tickvalue <= last_el.tickvalue))) {
+      (!el.forward && (el.tickvalue <= last_el.tickvalue))) 
+   {
       dtl = ((float) (el.tickvalue - last_el.tickvalue));
    }
-   else if (el.forward) {
+   else if (el.forward) 
+   {
       dtl = ((float) ((el.tickvalue + 1024) - last_el.tickvalue));
    }
-   else {
+   else 
+   {
       dtl = ((float) (el.tickvalue - (last_el.tickvalue + 1024)));
    }
+   
+   /* dtl ou dtr > 0 -> forward */
 
    /* Trick: when going for instance Forward, then Backwards but last_er.tick was still < er.tick */
    if (custom_abs(dtr) > 800) {
@@ -354,9 +377,9 @@ void updateState() {
    currentstate.y += dy;
    IntMasterEnable();
 
-//   UARTprintf("state (in mm) (x = %d, ", (int) (currentstate.x * 1.0)); // %d = int, %u = uint.
-//   UARTprintf("y = %d, ", (int) (currentstate.y * 1.0)); // %d = int, %u = uint.
-//   UARTprintf("phi = %d (in rad*1000))\n", (int) (currentstate.phi * 1000.0)); // %d = int, %u = uint.
+   //UARTprintf("state (in mm) (x = %d, ", (int) (currentstate.x * 1.0)); // %d = int, %u = uint.
+   //UARTprintf("y = %d, ", (int) (currentstate.y * 1.0)); // %d = int, %u = uint.
+   //UARTprintf("phi = %d (in rad*1000))\n", (int) (currentstate.phi * 1000.0)); // %d = int, %u = uint.
 
    //State updated.
 
@@ -419,8 +442,8 @@ void tracker(portTickType* xLastWakeTime) {
       right_velocity = right_velocity/custom_abs(left_velocity) ;
       left_velocity = left_velocity/custom_abs(left_velocity) ;
    }
-   left_velocity = left_velocity * (float) 0x03FF;
-   right_velocity = right_velocity * (float) 0x03FF;
+   left_velocity = left_velocity * (float) 0x01FF;
+   right_velocity = right_velocity * (float) 0x01FF;
    rv = (int) right_velocity;
    lv = (int) left_velocity;
    if (left_velocity != custom_abs(left_velocity)) {

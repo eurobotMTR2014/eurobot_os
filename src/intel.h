@@ -5,4 +5,5 @@
 
 void intelligenceTask (void* intelligenceTask);
 
+
 #endif // INTEL_H_INCLUDED
