@@ -3,16 +3,6 @@
 #pragma GCC diagnostic ignored "-Wchar-subscripts"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-#ifndef INTER_WHEEL
-   #define INTER_WHEEL 257.0
-#endif
-#ifndef WHEEL_DIAM
-   #define WHEEL_DIAM 59.0
-#endif
-#ifndef ENC_TRNSF
-   #define ENC_TRNSF (WHEEL_DIAM*PI)/(2 * 1024.0 * (36.0/22.0)) // Changé 20 -> 22
-#endif
-
 static portTickType cpu_tick;
 
 extern bool ROBOT_start;

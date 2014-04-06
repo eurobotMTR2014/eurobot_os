@@ -80,6 +80,8 @@ typedef struct PositionGoal_t
 	float y;		// final position
 	float phi;		// final angle
 	float k;        // curvature
+
+	bool stop;      // Have to stop at this point
 } PositionGoal;
 
 typedef struct Coord_t {

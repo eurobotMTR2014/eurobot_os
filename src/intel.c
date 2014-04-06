@@ -32,19 +32,19 @@ void intelligenceTask (void* pvParameters)
     msg = "AI launched";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);	
 
-    ctrl_initControl(0, 0, 0);
+    //ctrl_initControl(0, 0, 0);
 
     msg = "ctrl_setNextGoalState";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
-    ctrl_setNextGoalState(900, 0, 42, 42, false);
-    ctrl_setNextGoalState(1200, 0, 42, 42, false);
-    ctrl_setNextGoalState(1500, 1200, 42, 42, false);
-    ctrl_setNextGoalState(1500, 900, 42, 42, false);
-    ctrl_setNextGoalState(1500, 300, 42, 42, false);
-    ctrl_setNextGoalState(1200, 1500, 42, 42, false);
-    ctrl_setNextGoalState(900, 1500, 42, 42, false);
-    ctrl_setNextGoalState(0, 1500, 42, 42, true);
+    world_add_goal(900, 0, 42, 42, false);
+    world_add_goal(1200, 0, 42, 42, false);
+    world_add_goal(1500, 1200, 42, 42, false);
+    world_add_goal(1500, 900, 42, 42, false);
+    world_add_goal(1500, 300, 42, 42, false);
+    world_add_goal(1200, 1500, 42, 42, false);
+    world_add_goal(900, 1500, 42, 42, false);
+    world_add_goal(0, 1500, 42, 42, true);
     ctrl_restart(&xLastWakeTime);
 //    int i = 0;
 
@@ -57,6 +57,7 @@ void intelligenceTask (void* pvParameters)
     curr.y = temp->y;
     curr.phi = temp->phi;
     */
+    /*
     state curr;
     while(!intelStop)
     {
@@ -67,18 +68,19 @@ void intelligenceTask (void* pvParameters)
         curr.phi = got->phi;
 
         //UARTprintf("x = %d, y = %d; phi = %d\n", (int)curr.x, (int)curr.y, (int)curr.phi);
-        UARTprintf("state (in mm) (x = %d, ", (int) (curr.x * 1.0)); // %d = int, %u = uint.
-        UARTprintf("y = %d, ", (int) (curr.y * 1.0)); // %d = int, %u = uint.
-        UARTprintf("phi = %d (in rad*1000))\n", (int) (curr.phi * 1000.0)); // %d = int, %u = uint.
+        //UARTprintf("state (in mm) (x = %d, ", (int) (curr.x * 1.0)); // %d = int, %u = uint.
+        //UARTprintf("y = %d, ", (int) (curr.y * 1.0)); // %d = int, %u = uint.
+        //UARTprintf("phi = %d (in rad*1000))\n", (int) (curr.phi * 1000.0)); // %d = int, %u = uint.
         /*
         if(compareFloat(curr.x, prev.x,0.0001) || compareFloat(curr.y, prev.y,0.0001) || compareFloat(curr.phi, prev.phi,0.0001) || curr.stop != prev.stop){
             msg = "Changed!";
             xQueueSend(screenMsgQueue, (void*) &msg, 0);
         }
         */
-
+/*
         vTaskDelayUntil(&xLastWakeTime, (20 / portTICK_RATE_MS));
     }
+    */
 
     while(1){}
 }

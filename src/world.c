@@ -3,6 +3,7 @@
 #define POSITION_GOAL_BUF_SIZE  500
 #define INIT_X_1 0
 #define INIT_Y_1 0
+#define INIT_PHI_1 0
 
 /*******************/
 /*  GOALS BUFFER   */
@@ -126,6 +127,7 @@ static void init_state()
 {
 	world.x = INIT_X_1;
 	world.y = INIT_Y_1;
+	world.phi = INIT_PHI_1;
 	world.stop = true;
 
 	world.state_mutex = xSemaphoreCreateMutex();
@@ -147,8 +149,8 @@ static void init_goals_buffer()
 
 static void reset_goal_buffer_sem()
 {
-	//world.goals_buffer.empty_slot_count = xSemaphoreCreateCounting(POSITION_GOAL_BUF_SIZE, POSITION_GOAL_BUF_SIZE);
-	//world.goals_buffer.filled_slot_count = xSemaphoreCreateCounting(POSITION_GOAL_BUF_SIZE, 0);
+	world.goals_buffer.empty_slot_count = xSemaphoreCreateCounting(POSITION_GOAL_BUF_SIZE, POSITION_GOAL_BUF_SIZE);
+	world.goals_buffer.filled_slot_count = xSemaphoreCreateCounting(POSITION_GOAL_BUF_SIZE, 0);
 }
 
 static void copy_goal(volatile PositionGoal* from, volatile PositionGoal* to)
@@ -157,6 +159,7 @@ static void copy_goal(volatile PositionGoal* from, volatile PositionGoal* to)
 	to->y = from->y;
 	to->phi = from->phi;
 	to->k = from->k;
+	to->stop = from->stop;
 }
 
 void copy_encoder(volatile Encoder* from, volatile Encoder* to)
@@ -313,7 +316,7 @@ void world_update_state()
 
 	// update state of the robot
 	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
-  	world.phi += ds.phi;
+	world.phi += ds.phi;
 	if (world.phi < -PI) {
 	   	world.phi += 2*PI;
 	}
@@ -323,7 +326,80 @@ void world_update_state()
 	world.x += ds.x;
 	world.y += ds.y;
 
-	UARTprintf("x : %d | y : %d | phi : %d\n", (int) world.x, (int) world.y, (int) world.phi);
+	UARTprintf("x : %d | y : %d | phi : %d\n", (int) world.x, (int) world.y, (int) (world.phi*1000));
 
 	xSemaphoreGive(world.state_mutex);
+}
+
+
+void world_set_stop_state(bool stop)
+{
+	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
+	world.stop = stop;
+	xSemaphoreGive(world.state_mutex);
+}
+
+bool world_get_stop_state()
+{
+	bool stop;
+
+	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
+	stop = world.stop;
+	xSemaphoreGive(world.state_mutex);
+
+	return stop;
+}
+
+bool goals_full_or_empty()
+{
+	bool fullOrEmpty;
+
+	xSemaphoreTake(world.goals_buffer.goals_mutex, portMAX_DELAY);
+	fullOrEmpty = (world.goals_buffer.in == world.goals_buffer.out);
+	xSemaphoreGive(world.goals_buffer.goals_mutex);
+
+	return fullOrEmpty;
+}
+
+
+
+void world_add_goal(float x, float y, float phi, float k, bool stop){
+   /*
+    UARTprintf("Goal: %d;%d  %d/%d\n",(int)x,(int)y,(int)k,stop);
+    UARTprintf("firstgoal = %d, nextgoals = %d\n", firstgoal, nextgoals);
+    Objective* d = &goals[nextgoals];
+   if (phi == 42) {
+      d->x = x;
+      d->y = y;
+      d->phi = phi;
+      d->k = k;
+      d->stop = stop;
+      nextgoals = (nextgoals + 1) % GOALS_POOL;
+   }
+   else {
+      d->x = x - 40*(custom_cos(phi));
+      d->y = y - 40*(custom_sin(phi));
+      d->phi = phi;
+      d->k = k;
+      d->stop = false;
+      nextgoals = (nextgoals + 1) % GOALS_POOL;
+      d = &goals[nextgoals];
+      d->x = x;
+      d->y = y;
+      d->phi = phi;
+      d->k = 25;
+      d->stop = stop;
+
+      nextgoals = (nextgoals + 1) % GOALS_POOL;
+   }
+   */
+
+   PositionGoal next;
+   next.x = x;
+   next.y = y;
+   next.phi = phi;
+   next.k = k;
+   next.stop = stop;
+
+   world_put_goal(next);
 }

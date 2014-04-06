@@ -9,6 +9,17 @@
 #define ODO_CURR_ENCODER_LEFT  0x03
 #define ODO_CURR_ENCODER_RIGHT 0x04
 
+/** Mecanical values */
+#ifndef INTER_WHEEL
+   #define INTER_WHEEL 257.0
+#endif
+#ifndef WHEEL_DIAM
+   #define WHEEL_DIAM 59.0
+#endif
+#ifndef ENC_TRNSF
+   #define ENC_TRNSF (WHEEL_DIAM*PI)/(2 * 1024.0 * (36.0/22.0)) // Changé 20 -> 22
+#endif
+
 /** Initialize the world */
 void init_world();
 
@@ -75,5 +86,28 @@ void world_update_encoder(int encoder_id);
  * updates the state of the robot
  */
 void world_update_state();
+
+/**
+ * @fn world_set_stop_state()
+ * Set the value 'stop' of the robot.
+ */
+void world_set_stop_state(bool stop);
+
+/**
+ * @fn world_get_stop_state()
+ * Get the value 'stop' of the robot.
+ */
+bool world_get_stop_state();
+
+/**
+  * @fn goals_full_or_empty
+  * Check if the buffer is full or empty
+  */
+bool goals_full_or_empty();
+
+/*
+ * Adds a given state to the desired points. REMEMBER phi has to be 42 in most cases (if one want to reach it the fastest possible).
+ **/
+void world_add_goal(float x, float y, float phi, float k, bool stop);
 
 #endif

@@ -419,6 +419,7 @@ void servoSTOP()
     servoParam[0] = 0x20;
     servoParam[1] = 0x00;
     servoParam[2] = 0x00;
+
     servoCmd(SERVO_BROADCAST, INST_WRITE, 3);
 }
 
