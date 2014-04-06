@@ -303,9 +303,10 @@ void launchOLED (void *pvParameters)
 
         // Drawing special lines
         // Free CPU
+        
         if (drawCpu)
         {
-            if (int_bat < 1300)
+            if (/*int_bat < 1300*/false)
             {
                 RIT128x96x4StringDraw("WARNING: LOW BATTERY!!!", 0, LINE_0, 15);
             }
@@ -320,6 +321,7 @@ void launchOLED (void *pvParameters)
 
             drawCpu = 0;
         }
+
 
 
         // Free Heap
@@ -441,11 +443,11 @@ void ROOTtask(void* pvParameters)
     
     msg = "Initializing servos...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
-    //servoInit(&xLastWakeTime);
+    servoInit(&xLastWakeTime);
     
     
 
-    vTaskDelayUntil (&xLastWakeTime, (300 / portTICK_RATE_MS));
+    vTaskDelayUntil (&xLastWakeTime, (200 / portTICK_RATE_MS));
 
     // Throw a ball
     /*
@@ -498,7 +500,7 @@ void ROOTtask(void* pvParameters)
 
     
 */
-    //vTaskDelayUntil (&xLastWakeTime, (2000 / portTICK_RATE_MS));
+    vTaskDelayUntil (&xLastWakeTime, (2000 / portTICK_RATE_MS));
     ROBOT_start = true; // Go!
 
     msg = "Playing!";
