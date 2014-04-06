@@ -118,18 +118,16 @@ void ctrl_initControl(float x, float y, float phi) {
 
 void ctrl_refresh(portTickType* xLastWakeTime) {
       if (!goals_full_or_empty() && !world_get_stop_state()) {
-         //world_update_state(); // Calcule positon courante et angle courant
          planner();
          tracker(xLastWakeTime);
       }
       else {
-         /* DEBUG
-         if(firstgoal == nextgoals)
-            UARTprintf("firstgoal != nextgoals\n");
-         else if(currentstate.stop)
-            UARTprintf("!currentstate.stop\n");
-         */
-         //world_update_state();
+
+         if(goals_full_or_empty())
+            UARTprintf("empty goals or full\n");
+         if(world_get_stop_state())
+            UARTprintf("Robot is stopped\n");
+         
          ctrl_stop(xLastWakeTime);
       }
 }
@@ -138,11 +136,16 @@ bool ctrl_restart(portTickType* xLastWakeTime) {
 
    // No goals or not stopped
    if(goals_full_or_empty() || !world_get_stop_state()){
+      if(goals_full_or_empty())
+            UARTprintf("empty goals or fulll\n");
+      if(!world_get_stop_state())
+            UARTprintf("Robot is not stopped\n");
       ctrl_stop(xLastWakeTime);
       return false;
    }
    // There is a goal and we are stopped
    else{
+      UARTprintf("There is a goal ! And we are not stopped !");
       #ifdef PID_CONTROLLER_ENABLE
          cpu_last_tick = xTaskGetTickCount();
          pid_integral = 0.0;
@@ -151,6 +154,7 @@ bool ctrl_restart(portTickType* xLastWakeTime) {
       planner();
 
       if (custom_sqrt(u1*u1 + u2*u2) <= EPSILON) { // If we had reached the goal.
+         UARTprintf("Destination reached !");
          removeCurrentGoalState();
       }
 
@@ -286,11 +290,15 @@ void updateState()
 }
 
 void planner() {
-   PositionGoal goal = world_pick_next_goal();
+   PositionGoal goal = world_peek_next_goal();
    Coord current = world_get_coord();
 
    u1 = goal.x - current.x;
    u2 = goal.y - current.y;
+
+   UARTprintf("u1 : %d --- u2 : %d\n", (int)(u1*1000.0), (int)(u2*1000.0));
+
+
 /*
    Objective* d = &goals[firstgoal];
    u1 = d->x - currentstate.x;
@@ -302,7 +310,7 @@ void planner() {
 }
 
 void tracker(portTickType* xLastWakeTime) {
-   PositionGoal goal = world_pick_next_goal();
+   PositionGoal goal = world_peek_next_goal();
    State currentstate = world_get_state();
 
    if(custom_sqrt(u1*u1 + u2*u2) <= EPSILON) {
@@ -350,6 +358,8 @@ void tracker(portTickType* xLastWakeTime) {
    if (right_velocity != custom_abs(right_velocity)) {
       rv = custom_absinthe(rv) + 0x0400;
    }
+
+   UARTprintf("---> lv ; rv = %d ; %d\n", lv, rv);
 
    for (int i = 0; i < 3; i++) {
       servoLeft(xLastWakeTime, *((char*) &lv + 1), *((char*) &lv));

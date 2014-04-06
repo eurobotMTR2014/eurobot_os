@@ -519,6 +519,9 @@ void ROOTtask(void* pvParameters)
     intelStop = true;
     controlStop = true;
 
+    msg = "Game over!";
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
+
     // STOP!
     servoSTOP();
     flapSTOP();

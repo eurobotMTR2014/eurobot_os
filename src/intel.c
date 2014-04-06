@@ -34,17 +34,21 @@ void intelligenceTask (void* pvParameters)
 
     //ctrl_initControl(0, 0, 0);
 
-    msg = "ctrl_setNextGoalState";
+    msg = "add goal";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
-    world_add_goal(900, 0, 42, 42, false);
-    world_add_goal(1200, 0, 42, 42, false);
-    world_add_goal(1500, 1200, 42, 42, false);
-    world_add_goal(1500, 900, 42, 42, false);
-    world_add_goal(1500, 300, 42, 42, false);
-    world_add_goal(1200, 1500, 42, 42, false);
-    world_add_goal(900, 1500, 42, 42, false);
-    world_add_goal(0, 1500, 42, 42, true);
+    world_add_goal(900, 0, 42, 142, false);
+    world_add_goal(1200, 0, 42, 142, false);
+    world_add_goal(1500, 1200, 42, 142, false);
+    world_add_goal(1500, 900, 42, 142, false);
+    world_add_goal(1500, 300, 42, 142, false);
+    world_add_goal(1200, 1500, 42, 142, false);
+    world_add_goal(900, 1500, 42, 142, false);
+    world_add_goal(0, 1500, 42, 142, true);
+
+    msg = "end add goal";
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
+
     ctrl_restart(&xLastWakeTime);
 //    int i = 0;
 

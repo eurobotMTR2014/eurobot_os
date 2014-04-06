@@ -174,12 +174,15 @@ PositionGoal world_peek_next_goal()
 	volatile GoalsBuffer* gb = &(world.goals_buffer);
 	PositionGoal pg;
 	
-	xSemaphoreTake(gb->filled_slot_count, portMAX_DELAY); // waits for data in the buffer
 	xSemaphoreTake(gb->goals_mutex, portMAX_DELAY); // mutex
 
 	pg = gb->goals[gb->out];
 
+	UARTprintf("in peek\n");
+
 	xSemaphoreGive(gb->goals_mutex);
+
+	UARTprintf("out peek\n");
 
 	return pg;
 }
@@ -249,8 +252,9 @@ Coord world_get_coord()
 	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
 	c.x = world.x;
 	c.y = world.y;
+	UARTprintf("in Coord\n");
 	xSemaphoreGive(world.state_mutex);
-
+	UARTprintf("out Coord\n");
 	return c;
 }
 
@@ -316,6 +320,7 @@ void world_update_state()
 
 	// update state of the robot
 	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
+
 	world.phi += ds.phi;
 	if (world.phi < -PI) {
 	   	world.phi += 2*PI;
@@ -326,9 +331,13 @@ void world_update_state()
 	world.x += ds.x;
 	world.y += ds.y;
 
-	UARTprintf("x : %d | y : %d | phi : %d\n", (int) world.x, (int) world.y, (int) (world.phi*1000));
-
 	xSemaphoreGive(world.state_mutex);
+
+	//UARTprintf("x : %d | y : %d | phi : %d\n", (int) world.x, (int) world.y, (int) (world.phi*1000));
+	
+	PositionGoal pg = world_peek_next_goal();
+	State s = world_get_state();
+	UARTprintf("Goal : (x;y) = (%d;%d) | Pos : (x;y;phi) = (%d, %d, %d)\n",(int) pg.x, (int) pg.y, (int) s.x, (int) s.y, (int) (1000*s.phi));
 }
 
 
