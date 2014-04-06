@@ -7,7 +7,7 @@
    #define GOALS_POOL 500
 #endif
 #ifndef INTER_WHEEL
-   #define INTER_WHEEL 357.0 // Changé! 280 -> 357
+   #define INTER_WHEEL 258.0
 #endif
 #ifndef WHEEL_DIAM
    #define WHEEL_DIAM 59.0
@@ -273,124 +273,11 @@ void removeCurrentGoalState() {
    #endif
 }
 
-void updateState() {
-   last_er.tickvalue = er.tickvalue;
-   last_er.time = er.time;
-   last_er.forward = er.forward;
-   //last_er.velocity = er.velocity;
 
-   last_el.tickvalue = el.tickvalue;
-   last_el.time = el.time;
-   last_el.forward = el.forward;
-   //last_el.velocity = el.velocity;
-
-   //UARTprintf("LEFT : ");
-   IntMasterDisable();
-   updateEncoder(&el);
-   updateEncoder(&er);
-   cpu_tick = xTaskGetTickCount();
-   IntMasterEnable();
-
-   // reverse value because left encoder turn backward when the robot goes forward
-   el.tickvalue = 1023 - el.tickvalue;
-   el.forward = !el.forward;
-
-
-   // compute variation of rotation since last update
-   // even when on the reversed side. 
-   int dtr; // left encoder
-   if ((er.forward && (er.tickvalue >= last_er.tickvalue)) ||
-      (!er.forward && (er.tickvalue <= last_er.tickvalue))) 
-   {
-      dtr = ((float) (er.tickvalue - last_er.tickvalue));
-   }
-   else if (er.forward) 
-   {
-      dtr = ((float) ((er.tickvalue + 1024) - last_er.tickvalue));
-   }
-   else 
-   {
-      dtr = ((float) (er.tickvalue - (last_er.tickvalue + 1024)));
-   }
-
-   int dtl; // right encoder
-
-   if ((el.forward && (el.tickvalue >= last_el.tickvalue)) ||
-      (!el.forward && (el.tickvalue <= last_el.tickvalue))) 
-   {
-      dtl = ((float) (el.tickvalue - last_el.tickvalue));
-   }
-   else if (el.forward) 
-   {
-      dtl = ((float) ((el.tickvalue + 1024) - last_el.tickvalue));
-   }
-   else 
-   {
-      dtl = ((float) (el.tickvalue - (last_el.tickvalue + 1024)));
-   }
-   
-   /* dtl ou dtr > 0 -> forward */
-
-   /* Trick: when going for instance Forward, then Backwards but last_er.tick was still < er.tick */
-   if (custom_abs(dtr) > 800) {
-      if (dtr > 0) {
-         dtr = 1024 - dtr;
-      }
-      else {
-         dtr = dtr + 1024;
-      }
-   }
-
-   if (custom_abs(dtl) > 800) {
-      if (dtl > 0) {
-         dtl = 1024 - dtl;
-      }
-      else {
-         dtl = dtl + 1024;
-      }
-   }
-
-   float dr = (float) dtr * ENC_TRNSF;
-   float dl = (float) dtl * ENC_TRNSF;
-
-   float dphi = ((dr - dl)/INTER_WHEEL);
-   float dx = ((dr + dl)/2) * custom_cos(currentstate.phi); // Approximations! Terms in [1 - cos(dphi)] neglected
-   float dy = ((dr + dl)/2) * custom_sin(currentstate.phi); // Approximations! Terms in sin(dphi) taken as dphi.
-   //UARTprintf("dtr = %d\n", dtr);
-   //UARTprintf("dtl = %d\n", dtl);
-   //UARTprintf("dr = %d\n", (int) (dr * 1000.0));
-   //UARTprintf("dl = %d\n", (int) (dl * 1000.0));
-   //UARTprintf("ENC_TRNSF_LOL = %d\n", (int) (ENC_TRNSF * 1000.0));
-   //UARTprintf("dphi = %d\n", (int) (dphi * 1000.0));
-   //UARTprintf("dx = %d\n", (int) (dx * 1000.0));
-   //UARTprintf("dy = %d\n", (int) (dy * 1000.0));
-
-   IntMasterDisable();
-   currentstate.phi += dphi;
-   if (currentstate.phi < -PI) {
-      currentstate.phi += 2*PI;
-   }
-   if (currentstate.phi > PI) {
-      currentstate.phi += -2*PI;
-   }
-   currentstate.x += dx;
-   currentstate.y += dy;
-   IntMasterEnable();
-
-   //UARTprintf("state (in mm) (x = %d, ", (int) (currentstate.x * 1.0)); // %d = int, %u = uint.
-   //UARTprintf("y = %d, ", (int) (currentstate.y * 1.0)); // %d = int, %u = uint.
-   //UARTprintf("phi = %d (in rad*1000))\n", (int) (currentstate.phi * 1000.0)); // %d = int, %u = uint.
-
-   //State updated.
-
+void updateState() 
+{
+   // to remove from here
 }
-
-void updateEncoder(Encoder* enc) {
-   enc->time = xTaskGetTickCount();
-   enc->tickvalue = (int) QEIPositionGet(enc->ulBase);
-   enc->forward = (QEIDirectionGet(enc->ulBase) == (unsigned long) 1);
-}
-
 
 void planner() {
    Objective* d = &goals[firstgoal];
@@ -402,7 +289,7 @@ void planner() {
 }
 
 void tracker(portTickType* xLastWakeTime) {
-    Objective* d = &goals[firstgoal];
+   Objective* d = &goals[firstgoal];
    if (custom_sqrt(u1*u1 + u2*u2) <= EPSILON) { // WE ARE DONE, check the stop condition. If there is none, throw the old state, goto next.
 //      UARTprintf("Dude, awesome, we are done.\n"); // %d = int, %u = uint.
       if (d->stop) {

@@ -49,6 +49,7 @@ typedef char bool;
 #include "control.h"
 #include "gametable.h"
 #include "world.h"
+#include "odometry.h"
 
 void errorReport(char* msg);
 void batteryReport(unsigned long bVolt);

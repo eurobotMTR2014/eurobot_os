@@ -99,5 +99,4 @@ void ctrl_calibphi(float phi);
 >>>>>>> Last_working_commit
 char ctrl_getForward();
 
-
 #endif
