@@ -83,6 +83,8 @@
 #define configUSE_RECURSIVE_MUTEXES			1
 #define configQUEUE_REGISTRY_SIZE				10
 #define configGENERATE_RUN_TIME_STATS		1
+ 
+#define configUSE_COUNTING_SEMAPHORES       1 // Added
 
 #define configMAX_PRIORITIES		( ( unsigned portBASE_TYPE ) 5 )
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
