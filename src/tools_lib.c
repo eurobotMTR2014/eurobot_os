@@ -273,7 +273,7 @@ bool servoCheck(portTickType* xLastWakeTime)
     {
         retval = false;
 
-        UARTprintf("Servo reception error: %d\n", servoRxStatus);
+        UARTprintf("Servo reception error: (id ; error) %x ; %x\n", servoBufferRx[2], servoBufferRx[4]);
 
         errorReport("Servo ack error!");
     }
@@ -597,12 +597,12 @@ void servoLeft(portTickType* xLastWakeTime, char upval, char downval)
    //servoCmd(SERVO_LEFT_ID, INST_REG_WRITE, 3);
     //UARTprintf("servoLeft %x & %x\n", upval, downval);
 
-    //bool ok;
-    //do
-    //{
+    bool ok;
+    do
+    {
         servoCmd(1, INST_REG_WRITE, 3);
-      //  ok = servoCheck(xLastWakeTime);
-    //} while (!ok);
+        ok = servoCheck(xLastWakeTime);
+    } while (!ok);
     
 }
 
@@ -615,12 +615,12 @@ void servoRight(portTickType* xLastWakeTime, char upval, char downval)
     //servoCmd(SERVO_RIGHT_ID, INST_REG_WRITE, 3);
     //UARTprintf("servoRight %x & %x\n", upval, downval);
     
-    //bool ok;
-    //do
-    //{
+    bool ok;
+    do
+    {
         servoCmd(0, INST_REG_WRITE, 3);
-      //  ok = servoCheck(xLastWakeTime);
-    //} while (!ok);
+        ok = servoCheck(xLastWakeTime);
+    } while (!ok);
     
 }
 
@@ -741,6 +741,31 @@ void servoBroadcast(void* pvParameters)
     while(1){
         vTaskDelayUntil (&xLastWakeTime, (100000 / portTICK_RATE_MS));
     }
+}
 
+void servoRespond(portTickType* xLastWakeTime, char ID){
+    servoParam[0] = 0x10;
+    servoParam[1] = 0x01;
+    
+    servoCmd(ID, INST_READ, 2);
 
+    if(servoListen(xLastWakeTime) != SERVO_RECEIVED_OK)
+        UARTprintf("NOT GOOD !\n");
+    else{
+        if(servoBufferRx[5] == 0)
+            UARTprintf("Never respond\n");
+        else if(servoBufferRx[5] == 1)
+            UARTprintf("Respond to READ instruction\n");
+        else if(servoBufferRx[5] == 2)
+            UARTprintf("Respond everytime\n");
+        else
+            UARTprintf("Error\n");
+    }
+}
+
+void servoSetRespond(portTickType* xLastWakeTime, char ID, unsigned int value){
+    servoParam[0] = 0x10;
+    servoParam[1] = value;
+
+    servoCmd(ID, INST_WRITE, 2);
 }

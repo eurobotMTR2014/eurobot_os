@@ -283,4 +283,20 @@ void throwSomeSpears(portTickType* xLastWakeTime, unsigned int num, unsigned lon
 //Broadcast
 void servoBroadcast(void* pvParameters);
 
+/**
+ * @fn servoRespond
+ * Check if the servo send a respond 
+ */
+void servoRespond(portTickType* xLastWakeTime, char ID);
+
+/**
+ * @fn servoSetRespond
+ * Set the value of the behaviour of returning status messages :
+ *   - 0x00 : Never respond
+ *   - 0x01 : Respond to READ
+ *   - 0x02 : Always respond 
+ */
+void servoSetRespond(portTickType* xLastWakeTime, char ID, unsigned int value);
+
+
 #endif // TOOLS_LIB_H_INCLUDED
