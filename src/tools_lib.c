@@ -339,8 +339,8 @@ void servoRxBufferClrRAW(unsigned long base)
 /* ======== Move the robot ======== */
 
 void robotForward(portTickType* xLastWakeTime, unsigned long duration){
-    servoSetSpeed(xLastWakeTime, 0, -0.4);
-    servoSetSpeed(xLastWakeTime, 1, 0.4);
+    servoSetSpeed(xLastWakeTime, SERVO_RIGHT_ID, -0.4);
+    servoSetSpeed(xLastWakeTime, SERVO_LEFT_ID, 0.4);
 
     servoSync();
 
@@ -349,8 +349,8 @@ void robotForward(portTickType* xLastWakeTime, unsigned long duration){
 }
 
 void robotBackward(portTickType* xLastWakeTime, unsigned long duration){
-    servoSetSpeed(xLastWakeTime, 0, 0.4);
-    servoSetSpeed(xLastWakeTime, 1, -0.4);
+    servoSetSpeed(xLastWakeTime, SERVO_RIGHT_ID, 0.4);
+    servoSetSpeed(xLastWakeTime, SERVO_LEFT_ID, -0.4);
 
     servoSync();
 
@@ -431,98 +431,6 @@ void flapSTOP()
     flapCmdUnchecked(SERVO_BROADCAST, INST_WRITE, 3);
 }
 
-void flapLeftConfig(portTickType* xLastWakeTime)
-{
-    flapParam[0] = 0x06;
-    flapParam[1] = FLAP_LEFT_DOWN_LOW;
-    flapParam[2] = FLAP_LEFT_DOWN_HIGH;
-    flapParam[3] = FLAP_LEFT_UP_LOW;
-    flapParam[4] = FLAP_LEFT_UP_HIGH;
-    flapCmd(3, INST_WRITE, 5, xLastWakeTime);
-}
-
-void flapLeftDown(portTickType* xLastWakeTime)
-{
-    flapParam[0] = 0x1E;
-    flapParam[1] = FLAP_LEFT_DOWN_LOW;
-    flapParam[2] = FLAP_LEFT_DOWN_HIGH;
-    flapParam[3] = 0xFF;
-    flapParam[4] = 0x03;
-    flapCmd(3, INST_WRITE, 5, xLastWakeTime);
-}
-
-void flapLeftUp(portTickType* xLastWakeTime)
-{
-    flapRightDown(xLastWakeTime);
-
-    flapParam[0] = 0x1E;
-    flapParam[1] = FLAP_LEFT_UP_LOW;
-    flapParam[2] = FLAP_LEFT_UP_HIGH;
-    flapParam[3] = 0xFF;
-    flapParam[4] = 0x07;
-    flapCmd(3, INST_WRITE, 5, xLastWakeTime);
-}
-
-void flapLeftBall(portTickType* xLastWakeTime)
-{
-    flapParam[0] = 0x1E;
-    flapParam[1] = FLAP_LEFT_BALL_LOW;
-    flapParam[2] = FLAP_LEFT_BALL_HIGH;
-    flapParam[3] = 0xFF;
-    flapParam[4] = 0x07;
-    flapCmd(3, INST_WRITE, 5, xLastWakeTime);
-}
-
-void flapLeftSecure(portTickType* xLastWakeTime)
-{
-    /*flapParam[0] = 0x1E;
-    flapParam[1] = FLAP_LEFT_SECURE_LOW;
-    flapParam[2] = FLAP_LEFT_SECURE_HIGH;
-    flapParam[3] = 0xFF;
-    flapParam[4] = 0x07;
-    flapCmd(3, INST_WRITE, 5, xLastWakeTime);*/
-}
-
-void flapRightConfig(portTickType* xLastWakeTime)
-{
-    flapParam[0] = 0x06;
-    flapParam[1] = FLAP_RIGHT_UP_LOW;
-    flapParam[2] = FLAP_RIGHT_UP_HIGH;
-    flapParam[3] = FLAP_RIGHT_DOWN_LOW;
-    flapParam[4] = FLAP_RIGHT_DOWN_HIGH;
-    flapCmd(4, INST_WRITE, 5, xLastWakeTime);
-}
-
-void flapRightDown(portTickType* xLastWakeTime)
-{
-    flapParam[0] = 0x1E;
-    flapParam[1] = FLAP_RIGHT_DOWN_LOW;
-    flapParam[2] = FLAP_RIGHT_DOWN_HIGH;
-    flapParam[3] = 0xFF;
-    flapParam[4] = 0x07;
-    flapCmd(4, INST_WRITE, 5, xLastWakeTime);
-}
-
-void flapRightUp(portTickType* xLastWakeTime)
-{
-
-    flapParam[0] = 0x1E;
-    flapParam[1] = FLAP_RIGHT_UP_LOW;
-    flapParam[2] = FLAP_RIGHT_UP_HIGH;
-    flapParam[3] = 0xFF;
-    flapParam[4] = 0x03;
-    flapCmd(4, INST_WRITE, 5, xLastWakeTime);
-}
-
-void flapRightBall(portTickType* xLastWakeTime)
-{
-    flapParam[0] = 0x1E;
-    flapParam[1] = FLAP_RIGHT_BALL_LOW;
-    flapParam[2] = FLAP_RIGHT_BALL_HIGH;
-    flapParam[3] = 0xFF;
-    flapParam[4] = 0x03;
-    flapCmd(4, INST_WRITE, 5, xLastWakeTime);
-}
 
 
 /* ============== 2014 ============== */
@@ -601,7 +509,7 @@ void servoLeft(portTickType* xLastWakeTime, char upval, char downval)
     bool ok;
     do
     {
-        servoCmd(1, INST_REG_WRITE, 3);
+        servoCmd(SERVO_LEFT_ID, INST_REG_WRITE, 3);
         ok = servoCheck(xLastWakeTime);
     } while (!ok);
     
@@ -619,7 +527,7 @@ void servoRight(portTickType* xLastWakeTime, char upval, char downval)
     bool ok;
     do
     {
-        servoCmd(0, INST_REG_WRITE, 3);
+        servoCmd(SERVO_RIGHT_ID, INST_REG_WRITE, 3);
         ok = servoCheck(xLastWakeTime);
     } while (!ok);
     

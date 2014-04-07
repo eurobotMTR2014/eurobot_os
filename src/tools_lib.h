@@ -50,8 +50,8 @@
 
 
 /* ============== 2014 ============== */
-#define SERVO_LEFT_ID 0
-#define SERVO_RIGHT_ID 1
+#define SERVO_LEFT_ID 1
+#define SERVO_RIGHT_ID 2
 
 #define FLAP_ID 3
 #define FLAP_LIMIT_UP 230

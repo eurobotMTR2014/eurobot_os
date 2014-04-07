@@ -95,7 +95,7 @@ int main (void)
     //xTaskCreate(servoCmdLine, (signed char *) "servoCmdLine", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
 
     xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
-    xTaskCreate(odometryTask, (signed char*) "odometryTask", 1000, NULL, (tskIDLE_PRIORITY + 4), NULL);
+    //xTaskCreate(odometryTask, (signed char*) "odometryTask", 1000, NULL, (tskIDLE_PRIORITY + 4), NULL);
     //xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
     //TaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
     //xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
@@ -446,11 +446,10 @@ void ROOTtask(void* pvParameters)
     msg = "Initializing flaps...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
     //flapInit(&xLastWakeTime);
-    
-    
+
     msg = "Initializing servos...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
-    //servoInit(&xLastWakeTime);
+    servoInit(&xLastWakeTime);
 
 
     vTaskDelayUntil (&xLastWakeTime, (200 / portTICK_RATE_MS));
@@ -553,13 +552,13 @@ bool checkServoStatus(portTickType* xLastWakeTime)
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
 
-    servoCmd(0, INST_PING, 0);
+    servoCmd(2, INST_PING, 0);
     if (!servoCheck(xLastWakeTime))
     {
         ok = false;
-        pln2("Servo 0 error");
+        pln2("Servo 2 error");
 
-        msg = "Servo 0 PAS OK!";
+        msg = "Servo 2 PAS OK!";
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
     
@@ -609,7 +608,7 @@ void servoInit(portTickType* xLastWakeTime)
 
     servoSync();
 
-    vTaskDelayUntil (xLastWakeTime, (1000 / portTICK_RATE_MS));
+    vTaskDelayUntil (xLastWakeTime, (10000 / portTICK_RATE_MS));
     servoSTOP();
 
     msg = "WAIT";
@@ -625,7 +624,7 @@ void servoInit(portTickType* xLastWakeTime)
 
     servoSync();
 
-    vTaskDelayUntil(xLastWakeTime, (1000 / portTICK_RATE_MS));
+    vTaskDelayUntil(xLastWakeTime, (3000 / portTICK_RATE_MS));
 
     servoSTOP();
 }
