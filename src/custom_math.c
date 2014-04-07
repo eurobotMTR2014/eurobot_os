@@ -129,3 +129,18 @@ void seedRandomGen()
 unsigned int getPseudoRandomNumber(unsigned int ceil) {
    return (myrand()%ceil);
 }
+
+float custom_min(float v1, float v2)
+{
+    return v1 < v2 ? v1 : v2;
+}
+
+float custom_max(float v1, float v2)
+{
+    return v1 > v2 ? v1 : v2;
+}
+
+bool compareFloat(float x, float y, float eps);
+{
+    return custom_abs(y-x) <= eps;
+}

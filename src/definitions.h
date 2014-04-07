@@ -89,6 +89,25 @@ typedef struct Coord_t {
    float y;
 } Coord;
 
+/*********************/
+/*    SERVO SPEED    */
+/*********************/
+typedef struct ServoSpeed_t
+{
+   float left_speed; // speed of the left servo in [-0x3FF, 0x3FF]
+   float right_speed; // speed of the right servo in [-0x3FF, 0x3FF]
+} ServoSpeed;
+
+/// Own defines 
+
+/** Mecanical values */
+
+#define SERVO_MAX_SPEED 0x3FF
+#define INTER_WHEEL 257.0
+#define WHEEL_DIAM 59.0
+#define ENC_TRNSF (WHEEL_DIAM*PI)/(2 * 1024.0 * (36.0/22.0)) // Changé 20 -> 22
+#define EPSILON 50.0 // e where we say we're at the goal.
+
 /// Own includes
 #include "IO_parameters.h"
 #include "custom_math.h"

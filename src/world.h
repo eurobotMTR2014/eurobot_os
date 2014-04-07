@@ -9,17 +9,6 @@
 #define ODO_CURR_ENCODER_LEFT  0x03
 #define ODO_CURR_ENCODER_RIGHT 0x04
 
-/** Mecanical values */
-#ifndef INTER_WHEEL
-   #define INTER_WHEEL 257.0
-#endif
-#ifndef WHEEL_DIAM
-   #define WHEEL_DIAM 59.0
-#endif
-#ifndef ENC_TRNSF
-   #define ENC_TRNSF (WHEEL_DIAM*PI)/(2 * 1024.0 * (36.0/22.0)) // Changé 20 -> 22
-#endif
-
 /** Initialize the world */
 void init_world();
 
@@ -122,4 +111,19 @@ bool goals_full_or_empty();
  **/
 void world_add_goal(float x, float y, float phi, float k, bool stop);
 
+
+/**
+ * @fn world_get_servo_speed
+ * Returns a ServoSpeed structure containing the speed of the current speed of the servos
+ * @return the servo's speeds
+ */
+ServoSpeed world_get_servo_speed();
+
+/**
+ * @fn world_set_servo_speed()
+ * Sets the speed of the servos
+ * @param ss a ServoSpeed structure containing the speeds of the servo
+ *			 values of the speeds must be in the range [-0x3FF, 0x3FF]
+ */
+void world_get_servo_speed(ServoSpeed ss);
 #endif
