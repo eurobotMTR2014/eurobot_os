@@ -92,7 +92,7 @@ State getDisplacement(Encoder er, Encoder el, Encoder last_er, Encoder last_el, 
    float dx = ((dr + dl)/2) * custom_cos(cs_phi); // Approximations! Terms in [1 - cos(dphi)] neglected
    float dy = ((dr + dl)/2) * custom_sin(cs_phi); // Approximations! Terms in sin(dphi) taken as dphi.
 
-   UARTprintf("dx : %d | dy : %d | dphi : %d\n", (int) dx, (int) dy, (int) dphi);
+   //UARTprintf("dx : %d | dy : %d | dphi : %d\n", (int) dx, (int) dy, (int) dphi);
 
    State ds;
 

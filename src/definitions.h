@@ -102,7 +102,7 @@ typedef struct ServoSpeed_t
 
 /** Mecanical values */
 
-#define SERVO_MAX_SPEED 0x3FF
+#define SERVO_MAX_SPEED 114/*0x3FF*/
 #define INTER_WHEEL 257.0
 #define WHEEL_DIAM 59.0
 #define ENC_TRNSF (WHEEL_DIAM*PI)/(2 * 1024.0 * (36.0/22.0)) // Changé 20 -> 22

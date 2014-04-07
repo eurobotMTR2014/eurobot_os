@@ -125,5 +125,5 @@ ServoSpeed world_get_servo_speed();
  * @param ss a ServoSpeed structure containing the speeds of the servo
  *			 values of the speeds must be in the range [-0x3FF, 0x3FF]
  */
-void world_get_servo_speed(ServoSpeed ss);
+void world_set_servo_speed(ServoSpeed ss);
 #endif

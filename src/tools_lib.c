@@ -364,9 +364,10 @@ void servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed){
    servoSetAbsoluteSpeed(xLastWakeTime, ID, (int)(SPEED_MAX * speed));
 }
 
+// abs_speed -> RPM
 void servoSetAbsoluteSpeed(portTickType* xLastWakeTime, char ID, int abs_speed){
 
-    int goalSpeed = custom_abs(abs_speed);
+    int goalSpeed = custom_abs(abs_speed) * (0x3FF/114);
 
     if(abs_speed < 0){
         goalSpeed |= (0x1 << 10); // Set the 10th bit to 1 
@@ -514,7 +515,7 @@ void servoLeft(portTickType* xLastWakeTime, char upval, char downval)
     servoParam[2] = upval;
 
    //servoCmd(SERVO_LEFT_ID, INST_REG_WRITE, 3);
-    UARTprintf("servoLeft %x & %x\n", upval, downval);
+    //UARTprintf("servoLeft %x & %x\n", upval, downval);
 
     bool ok;
     do
@@ -527,7 +528,7 @@ void servoLeft(portTickType* xLastWakeTime, char upval, char downval)
 
 void servoRight(portTickType* xLastWakeTime, char upval, char downval)
 {
-    UARTprintf("servoRight\n");
+    //UARTprintf("servoRight\n");
     servoParam[0] = 0x20;
     servoParam[1] = downval;
     servoParam[2] = upval ^ 0x04;

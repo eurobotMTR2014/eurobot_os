@@ -4,7 +4,7 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 #ifndef DELTA_V_MAX // max speed increment between two control 
-   #define (0.2 * SERVO_MAX_SPEED);
+   #define DELTA_V_MAX  22.8/*0.2*SERVO_MAX_SPEED*/
 #endif
 
 #define CONTROL_TRICK_ENABLE
@@ -170,6 +170,9 @@ void tracker(portTickType* xLastWakeTime)
    float right_velocity = (2.0*v + w*INTER_WHEEL)/WHEEL_DIAM,
          left_velocity = (2.0*v - w*INTER_WHEEL)/WHEEL_DIAM;
 
+   UARTprintf("lv, rv = %d, %d\n", (int) left_velocity, (int) right_velocity);
+
+
    // start sloping
          // false value -> must adjust
    float desired_right_velocity = custom_abs(right_velocity),
@@ -178,15 +181,15 @@ void tracker(portTickType* xLastWakeTime)
    ServoSpeed prev_velocity = world_get_servo_speed();
    prev_velocity.left_speed = custom_abs(prev_velocity.left_speed);
    prev_velocity.right_speed = custom_abs(prev_velocity.right_speed);
-   
-   float max_right_velocity = min(SERVO_MAX_SPEED, prev_velocity.right_speed + (float) DELTA_V_MAX),
-         max_left_velocity = min(SERVO_MAX_SPEED, prev_velocity.left_speed + (float) DELTA_V_MAX),
+
+   float max_right_velocity = custom_min(SERVO_MAX_SPEED, (float)(prev_velocity.right_speed + DELTA_V_MAX) ),
+         max_left_velocity = custom_min(SERVO_MAX_SPEED, (float)(prev_velocity.left_speed + DELTA_V_MAX) ),
          dist_right = max_right_velocity - desired_right_velocity,
          dist_left = max_left_velocity - desired_left_velocity,
          slope_ratio;
 
    // find on which side the speed is limitant
-   if(compareFloat(max(dist_left, dist_right), dist_right, 0.00001)) // right speed is the limitant
+   if(compareFloat(custom_max(dist_left, dist_right), dist_right, 0.00001)) // right speed is the limitant
       slope_ratio = max_right_velocity / desired_right_velocity;
    else // left speed is the limitant
       slope_ratio = max_left_velocity / desired_left_velocity;
@@ -197,13 +200,22 @@ void tracker(portTickType* xLastWakeTime)
    // restore direction of the speed
    if (final_left_velocity != custom_abs(final_left_velocity))
       final_left_velocity *= -1;
-         
+
    if (final_right_velocity != custom_abs(final_right_velocity))
       final_right_velocity *= -1;
 
    for (int i = 0; i < 3; i++) {
-      setAbsoluteSpeed(SERVO_LEFT, final_left_velocity);
-      setAbsoluteSpeed(SERVO_RIGHT, final_right_velocity);
+      servoSetAbsoluteSpeed(xLastWakeTime, SERVO_LEFT_ID, final_left_velocity);
+      servoSetAbsoluteSpeed(xLastWakeTime, SERVO_RIGHT_ID, final_right_velocity);
       servoSync();
    }
+
+   /* Update speed in the world */
+   ServoSpeed update_speed;
+   update_speed.left_speed = final_left_velocity;
+   update_speed.right_speed = final_right_velocity;
+
+   UARTprintf("Speed computed : (left, right) = (%d, %d)\n", (int)final_left_velocity, (int)final_right_velocity);
+
+   world_set_servo_speed(update_speed);
 }

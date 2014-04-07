@@ -132,6 +132,10 @@ static void init_state()
 	world.y = INIT_Y_1;
 	world.phi = INIT_PHI_1;
 	world.stop = true;
+	
+	world.curr_servo_speed.left_speed = 0;
+	world.curr_servo_speed.right_speed = 0;
+
 
 	world.state_mutex = xSemaphoreCreateMutex();
 	world.update_state_mutex = xSemaphoreCreateMutex();
@@ -396,7 +400,7 @@ ServoSpeed world_get_servo_speed()
 	return ss;
 }
 
-void world_get_servo_speed(ServoSpeed ss)
+void world_set_servo_speed(ServoSpeed ss)
 {
 	// checks input
 	if((custom_abs(ss.left_speed) > (float) 0x3FF) || 
