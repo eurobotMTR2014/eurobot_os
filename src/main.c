@@ -426,8 +426,8 @@ void ROOTtask(void* pvParameters)
     msg = "Checking servo status";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
-    servoRespond(&xLastWakeTime, 2);
-    servoRespond(&xLastWakeTime, 1);
+    //servoRespond(&xLastWakeTime, 2);
+    //servoRespond(&xLastWakeTime, 1);
 
     /*
      * Note : Changer checkServoStatus pour intégrer le flap avant les tests!!!!

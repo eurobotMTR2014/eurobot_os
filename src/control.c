@@ -205,8 +205,8 @@ void tracker(portTickType* xLastWakeTime)
       final_right_velocity *= -1;
 
    for (int i = 0; i < 3; i++) {
-      servoSetAbsoluteSpeed(xLastWakeTime, SERVO_LEFT_ID, final_left_velocity);
-      servoSetAbsoluteSpeed(xLastWakeTime, SERVO_RIGHT_ID, final_right_velocity);
+      servoSetAbsoluteSpeed(xLastWakeTime, SERVO_LEFT_ID, (int)final_left_velocity);
+      servoSetAbsoluteSpeed(xLastWakeTime, SERVO_RIGHT_ID, (int)final_right_velocity);
       servoSync();
    }
 

@@ -24,6 +24,8 @@ char* flapRxStatus = flapBufferRx + 4;
 char* servoRxParams = servoBufferRx + 5;
 char* flapRxParams = flapBufferRx + 5;
 
+extern xQueueHandle screenMsgQueue;
+
 #define UART_RX_MS_WAIT 150
 static unsigned long rx_servo_ms_wait = UART_RX_MS_WAIT; // Static here to avoid stack overflows
 static unsigned long rx_flap_ms_wait = UART_RX_MS_WAIT; // Static here to avoid stack overflows
@@ -118,6 +120,8 @@ char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* buffe
 {
     char received = 0;
 
+    char* msg = pvPortMalloc(sizeof(char) * 21);
+
     while (received < 4)
     {
         while(!UARTCharsAvail(base) && *rx_ms_wait > 0)
@@ -131,6 +135,10 @@ char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* buffe
             *rx_ms_wait = UART_RX_MS_WAIT;
             pln2("SERVO DOWN!!!");
             UARTprintf("SERVO NOT RESPONDING: %d ", bufferRx[2]);
+
+            msg = "Servo not resp.";
+            xQueueSend(screenMsgQueue, (void*) &msg, 0);
+
             return SERVO_NOT_RESP;
         }
 
@@ -160,6 +168,10 @@ char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* buffe
     {
         pln("Servo Head error");
         servoRxBufferClrRAW(base);
+
+        msg = "Head error";
+        xQueueSend(screenMsgQueue, (void*) &msg, 0);
+
         return SERVO_HEAD_ERROR; // Head error
     }
 
@@ -259,7 +271,8 @@ void flapCmdUnchecked(char ID, char instruction, char paramLength)
 bool servoCheck(portTickType* xLastWakeTime)
 {
     bool retval = true;
-
+    char* msg = pvPortMalloc(sizeof(char) * 21);
+    
     char rval = servoListen(xLastWakeTime);
     if (rval != SERVO_RECEIVED_OK)
     {
@@ -274,6 +287,9 @@ bool servoCheck(portTickType* xLastWakeTime)
         retval = false;
 
         UARTprintf("Servo reception error: (id ; error) %x ; %x\n", servoBufferRx[2], servoBufferRx[4]);
+
+        msg = "Reception error";
+        xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
         errorReport("Servo ack error!");
     }
@@ -361,11 +377,13 @@ void robotBackward(portTickType* xLastWakeTime, unsigned long duration){
 /* ================================ */
     
 void servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed){
-   servoSetAbsoluteSpeed(xLastWakeTime, ID, (int)(SPEED_MAX * speed));
+   servoSetAbsoluteSpeed(xLastWakeTime, ID, (int)(114 * speed));
 }
 
 // abs_speed -> RPM
 void servoSetAbsoluteSpeed(portTickType* xLastWakeTime, char ID, int abs_speed){
+
+    UARTprintf("abs_speed = %d\n", abs_speed);
 
     int goalSpeed = custom_abs(abs_speed) * (0x3FF/114);
 
@@ -613,9 +631,6 @@ void throwSomeSpears(portTickType* xLastWakeTime, unsigned int num, unsigned lon
 }
 
 
-
-
-extern xQueueHandle screenMsgQueue;
 
 void servoBroadcast(void* pvParameters)
 {
