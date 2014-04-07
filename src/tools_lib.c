@@ -360,21 +360,25 @@ void robotBackward(portTickType* xLastWakeTime, unsigned long duration){
 
 /* ================================ */
     
-char servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed){
-   return servoSetAbsoluteSpeed(xLastWakeTime, ID, (int)(0x3FF * custom_abs(speed)));
+void servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed){
+   servoSetAbsoluteSpeed(xLastWakeTime, ID, (int)(SPEED_MAX * custom_abs(speed)));
 }
 
-char servoSetAbsoluteSpeed(portTickType* xLastWakeTime, char ID, int abs_speed){
-    char data[2];
+void servoSetAbsoluteSpeed(portTickType* xLastWakeTime, char ID, int abs_speed){
 
     if(abs_speed < 0){
         abs_speed |= (0x1 << 10); // Set the 10th bit to 1 
     }
 
-    data[0] = abs_speed & 0xFF;
-    data[1] = abs_speed >> 8;
+    servoParam[0] = 0x20;
+    servoParam[1] = abs_speed & 0xFF;
+    servoParam[2] = abs_speed >> 8;
 
-    return servoForward(xLastWakeTime, ID, data[1], data[0]);
+    bool ok;
+    do{
+        servoCmd(ID, INST_REG_WRITE, 3);
+        ok = servoCheck(xLastWakeTime);
+    }while(!ok);
 }
 
 char servoForward(portTickType* xLastWakeTime, char ID, char upval, char downval)
@@ -473,7 +477,7 @@ void flapGoalAngle(portTickType* xLastWakeTime, int angle, float speed){
     flapParam[2] = angleGoal >> 8;
 
     /* Setting the speed also */
-    int goalSpeed = (0x3FF * custom_abs(speed));
+    int goalSpeed = (SPEED_MAX * custom_abs(speed));
 
     // If speed is < 0, servo will turn clowkwise 
     if(speed < 0){

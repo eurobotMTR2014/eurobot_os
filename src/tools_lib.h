@@ -57,6 +57,7 @@
 #define FLAP_LIMIT_UP 230
 #define FLAP_LIMIT_DOWN 70
 
+#define SPEED_MAX 0x3FF
 /* ================================== */
 
 
@@ -195,6 +196,9 @@ void servoRxBufferClrRAW(unsigned long base);
  */
  char servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed);
 
+/**
+  * Idem above with absolute speed (0 <= speed <= 0x3FF)
+  */
  char servoSetAbsoluteSpeed(portTickType* xLastWakeTime, char ID, int abs_speed);
 
 // Manual controls
