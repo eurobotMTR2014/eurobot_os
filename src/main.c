@@ -97,7 +97,7 @@ int main (void)
     xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
     //xTaskCreate(odometryTask, (signed char*) "odometryTask", 1000, NULL, (tskIDLE_PRIORITY + 4), NULL);
     //xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
-    //TaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    //xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
     //xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
 
     pln("Launching scheduler");
@@ -426,7 +426,7 @@ void ROOTtask(void* pvParameters)
     msg = "Checking servo status";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
-    servoRespond(&xLastWakeTime, 0);
+    servoRespond(&xLastWakeTime, 2);
     servoRespond(&xLastWakeTime, 1);
 
     /*
@@ -505,7 +505,7 @@ void ROOTtask(void* pvParameters)
 
     
 */
-    vTaskDelayUntil (&xLastWakeTime, (2000 / portTICK_RATE_MS));
+    vTaskDelayUntil (&xLastWakeTime, (1000 / portTICK_RATE_MS));
     ROBOT_start = true; // Go!
 
     msg = "Playing!";
@@ -598,17 +598,11 @@ void servoInit(portTickType* xLastWakeTime)
     msg = "FORWARD";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
-    //servoForwardFULL(xLastWakeTime, 0); // Avant, c'était 1
-    //servoBackwardFULL(xLastWakeTime, 1); // Avant, c'était 2
-
-    //servoSetSpeed(xLastWakeTime, 0, 0.5);
-    //servoSetSpeed(xLastWakeTime, 1, -0.5);
-    servoLeft(xLastWakeTime, 0x01, 0xFF);
-    servoRight(xLastWakeTime, 0x01, 0xFF);
-
+    servoSetSpeed(xLastWakeTime, 2, -0.5);
+    servoSetSpeed(xLastWakeTime, 1, 0.5);
     servoSync();
 
-    vTaskDelayUntil (xLastWakeTime, (10000 / portTICK_RATE_MS));
+    vTaskDelayUntil (xLastWakeTime, (2000 / portTICK_RATE_MS));
     servoSTOP();
 
     msg = "WAIT";
@@ -618,13 +612,12 @@ void servoInit(portTickType* xLastWakeTime)
 
     msg = "BACKWARD";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
-
-    servoLeft(xLastWakeTime, 0x01, 0xFF);
-    servoRight(xLastWakeTime, 0x01, 0xFF);
-
+    
+    servoSetSpeed(xLastWakeTime, 1, -0.5);
+    servoSetSpeed(xLastWakeTime, 2, 0.5);
     servoSync();
-
-    vTaskDelayUntil(xLastWakeTime, (3000 / portTICK_RATE_MS));
+    
+    vTaskDelayUntil(xLastWakeTime, (2000 / portTICK_RATE_MS));
 
     servoSTOP();
 }

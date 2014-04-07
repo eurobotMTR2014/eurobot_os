@@ -357,7 +357,7 @@ void world_update_state()
 	world.x += ds.x;
 	world.y += ds.y;
 
-	UARTprintf("x : %d | y : %d | phi : %d\n", (int) world.x, (int) world.y, (int) (world.phi*1000));
+	//UARTprintf("x : %d | y : %d | phi : %d\n", (int) world.x, (int) world.y, (int) (world.phi*1000));
 
 	xSemaphoreGive(world.state_mutex);
 

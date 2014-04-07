@@ -171,28 +171,28 @@ void tracker(portTickType* xLastWakeTime)
 //   UARTprintf("Angular controller velocity = %X\n", (int) (w * 1000.0));
 
    float right_velocity = (2.0*v + w*INTER_WHEEL)/WHEEL_DIAM,
-         left_velocity = (2.0*v - w*INTER_WHEEL)/WHEEL_DIAM,
-         right_velocity_scaled, left_velocity_scaled;
+         left_velocity = (2.0*v - w*INTER_WHEEL)/WHEEL_DIAM;
    
    //UARTprintf("tracker() : servo speed :: (l:r) = (%d:%d)\n", (int) (100*left_velocity), (100*right_velocity));
 //Now let's scale the velocities between [-1, 1]   
-   float rv = (int) right_velocity;
+   
    if (custom_abs(right_velocity) > custom_abs(left_velocity)) {
-      left_velocity_scaled = left_velocity/custom_abs(right_velocity) ;
-      right_velocity_scaled = right_velocity/custom_abs(right_velocity) ;
+      left_velocity = left_velocity/custom_abs(right_velocity) ;
+      right_velocity = right_velocity/custom_abs(right_velocity) ;
    }
    else {
-      right_velocity_scaled = right_velocity/custom_abs(left_velocity) ;
-      left_velocity_scaled = left_velocity/custom_abs(left_velocity) ;
+      right_velocity = right_velocity/custom_abs(left_velocity) ;
+      left_velocity = left_velocity/custom_abs(left_velocity) ;
    }
 
    // slope factor computation
 
 
-   left_velocity = left_velocity_scaled * (float) 0x01FF;
-   right_velocity = right_velocity_scaled * (float) 0x01FF;
+   left_velocity = left_velocity * (float) 0x01FF;
+   right_velocity = right_velocity * (float) 0x01FF;
 
    float lv = (int) left_velocity;
+   float rv = (int) right_velocity;
 
    if (left_velocity != custom_abs(left_velocity))
       lv = custom_absinthe(lv) + 0x0400;
