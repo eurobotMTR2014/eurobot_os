@@ -85,13 +85,13 @@ static void reset_goal_buffer_sem();
 /**
  * Copy the content of the first goal structure into the second
  */
-static void copy_goal(PositionGoal* volatile from, PositionGoal* volatile to);
+static void copy_goal(volatile PositionGoal* from, volatile PositionGoal* to);
 
 /**
  * Copy the content of the first encoder structure into the second
  * (ulBase field is not copied)
  */
-static void copy_encoder(Encoder* volatile from, Encoder* volatile to);
+static void copy_encoder(volatile Encoder* from, volatile Encoder* to);
 
 // world data
 volatile World world;
@@ -151,7 +151,7 @@ static void reset_goal_buffer_sem()
 	world.goals_buffer.filled_slot_count = xSemaphoreCreateCounting(POSITION_GOAL_BUF_SIZE, 0);
 }
 
-static void copy_goal(PositionGoal* volatile from, PositionGoal* volatile to)
+static void copy_goal(volatile PositionGoal* from, volatile PositionGoal* to)
 {
 	to->x = from->x;
 	to->y = from->y;
@@ -159,7 +159,7 @@ static void copy_goal(PositionGoal* volatile from, PositionGoal* volatile to)
 	to->k = from->k;
 }
 
-void copy_encoder(Encoder* volatile from, Encoder* volatile to)
+void copy_encoder(volatile Encoder* from, volatile Encoder* to)
 {
 	to->tickvalue = from->tickvalue;
 	to->time = from->time;
@@ -168,7 +168,7 @@ void copy_encoder(Encoder* volatile from, Encoder* volatile to)
 
 PositionGoal world_peek_next_goal()
 {
-	GoalsBuffer* volatile gb = &(world.goals_buffer);
+	volatile GoalsBuffer* gb = &(world.goals_buffer);
 	PositionGoal pg;
 	
 	xSemaphoreTake(gb->filled_slot_count, portMAX_DELAY); // waits for data in the buffer
@@ -183,7 +183,7 @@ PositionGoal world_peek_next_goal()
 
 PositionGoal world_pick_next_goal()
 {
-	GoalsBuffer* volatile gb = &(world.goals_buffer);
+	volatile GoalsBuffer* gb = &(world.goals_buffer);
 	PositionGoal pg;
 	
 	xSemaphoreTake(gb->filled_slot_count, portMAX_DELAY); // waits for data in the buffer
@@ -200,7 +200,7 @@ PositionGoal world_pick_next_goal()
 
 void world_put_goal(PositionGoal pg)
 {
-	GoalsBuffer* volatile gb = &(world.goals_buffer);
+	volatile GoalsBuffer* gb = &(world.goals_buffer);
 
 	xSemaphoreTake(gb->empty_slot_count, portMAX_DELAY);
 	xSemaphoreTake(gb->goals_mutex, portMAX_DELAY);
@@ -214,7 +214,7 @@ void world_put_goal(PositionGoal pg)
 
 void world_goal_flush()
 {
-	GoalsBuffer* volatile gb = &(world.goals_buffer);
+	volatile GoalsBuffer* gb = &(world.goals_buffer);
 
 	xSemaphoreTake(gb->goals_mutex, portMAX_DELAY);
 	// reset semaphores 
@@ -227,7 +227,7 @@ void world_goal_flush()
 
 void world_goal_remove_peek()
 {
-	GoalsBuffer* volatile gb = &(world.goals_buffer);
+	volatile GoalsBuffer* gb = &(world.goals_buffer);
 
 	xSemaphoreTake(gb->filled_slot_count, portMAX_DELAY);
 	xSemaphoreTake(gb->goals_mutex, portMAX_DELAY);
