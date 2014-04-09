@@ -83,12 +83,12 @@ void controlTask (void* pvParameters)
 {
    portTickType xLastWakeTime;
    xLastWakeTime = xTaskGetTickCount();
-
-//   while (!ROBOT_start)
-//   {
-//      vTaskDelayUntil (&xLastWakeTime, (10 / portTICK_RATE_MS));
-//   }
-
+/*
+   while (!ROBOT_start)
+   {
+      vTaskDelayUntil (&xLastWakeTime, (10 / portTICK_RATE_MS));
+   }
+*/
    pln2("Control launched");
 
    IntMasterDisable();

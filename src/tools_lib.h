@@ -53,7 +53,7 @@
 #define SERVO_LEFT_ID 0
 #define SERVO_RIGHT_ID 1
 
-#define FLAP_ID 2
+#define FLAP_ID 3
 #define FLAP_LIMIT_UP 230
 #define FLAP_LIMIT_DOWN 70
 
@@ -201,6 +201,10 @@ char servoBackward(portTickType* xLastWakeTime, char ID, char upval, char downva
 char servoForwardFULL(portTickType* xLastWakeTime, char ID);
 char servoBackwardFULL(portTickType* xLastWakeTime, char ID);
 
+// Robot (entire robot) control
+void robotForward(portTickType* xLastWakeTime, unsigned long duration);
+void robotBackward(portTickType* xLastWakeTime, unsigned long duration);
+
 void servoFreeWheel();
 void servoSTOP();
 void flapSTOP();
@@ -267,13 +271,13 @@ float sharp_convert(unsigned long value);
  * @fn throwSpear
  * Throw a spear (ball)
  */
-void throwSpear();
+void throwSpear(portTickType* xLastWakeTime);
 
 /**
  * @fn throwSomeSpears
  * Throw 'num' spears (balls) spaced out 'wait' ms
  */
-void throwSomeSpears(portTickType* xLastWakeTime, unsigned long num, unsigned long wait);
+void throwSomeSpears(portTickType* xLastWakeTime, unsigned int num, unsigned long wait);
 
 
 //Broadcast

@@ -94,11 +94,5 @@ void ctrl_calibphi(float phi);
  */
 char ctrl_getForward();
 
-/**
- * Update the encoder enc
- * @param enc a pointer to the encoder structure
- * @note the field ulBase must be set
- */
-void updateEncoder(Encoder* enc);
 
 #endif
