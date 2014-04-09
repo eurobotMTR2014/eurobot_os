@@ -11,7 +11,7 @@ void odometryTask (void* odometryTask);
 /**
   * Update the values of an encoder
   */
-void updateEncoder(Encoder* enc);
+void updateEncoder(volatile Encoder* enc);
 
 /**
  * Returns in a State struct the displacement of the robot (dx, dy and dphi)

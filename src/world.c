@@ -54,7 +54,7 @@ typedef struct World_t {
 
 // semaphores
 // extern functions 
-extern void updateEncoder(Encoder* enc);
+extern void updateEncoder(volatile Encoder* enc);
 
 // static functions 
 /**
@@ -205,7 +205,7 @@ void world_put_goal(PositionGoal pg)
 	xSemaphoreTake(gb->empty_slot_count, portMAX_DELAY);
 	xSemaphoreTake(gb->goals_mutex, portMAX_DELAY);
 
-	gb->goals[gb->in] = *pg;
+	gb->goals[gb->in] = pg;
 	gb->in = (gb->in + 1) % POSITION_GOAL_BUF_SIZE;
 
 	xSemaphoreGive(gb->goals_mutex);

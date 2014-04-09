@@ -20,7 +20,7 @@ void odometryTask (void* odometryTask){
    while(1){}
 }
 
-void updateEncoder(Encoder* enc) 
+void updateEncoder(volatile Encoder* enc) 
 {
    enc->time = xTaskGetTickCount();
    enc->tickvalue = (int) QEIPositionGet(enc->ulBase);
