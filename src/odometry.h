@@ -3,8 +3,6 @@
 #define ODOMETRY
 
 #include "definitions.h"
-#include "world.h"
-
 
 void odometryTask (void* odometryTask);
 
