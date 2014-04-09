@@ -22,7 +22,6 @@ typedef struct GoalsBuffer_t {
 
 // struct holding the world data
 typedef struct World_t {
-
 	// odometry and captors measures
 	// previous fetch
 	Encoder prev_right;
@@ -72,12 +71,24 @@ static void init_goals_buffer();
  * Initialize the captors related fields
  */ 
 static void init_captors();
+
 /**
  * Resets counting semaphores og goal buffer
  */
-void reset_goal_buffer_sem();
+static void reset_goal_buffer_sem();
 
-// world data
+/**
+ * Copy the content of the first goal structure into the second
+ */
+static void copy_goal(PositionGoal* from, PositionGoal* to);
+
+/**
+ * Copy the content of the first encoder structure into the second
+ * (ulBase field is not copied)
+ */
+static void copy_encoder(Encoder* from, Encoder* to);
+
+//z world data
 volatile World world;
 
 
@@ -96,10 +107,10 @@ static void init_encoders()
 	world.prev_right.ulBase = QEI0_BASE;
 	world.curr_right.ulBase = QEI0_BASE;
 
-	// sets initial values for the fields
+	// update encoder values
 	updateEncoder(&(world.prev_left));
-	updateEncoder(&(world.curr_left));
 	updateEncoder(&(world.prev_right));
+	updateEncoder(&(world.curr_left));
 	updateEncoder(&(world.curr_right));
 
 	// sets encoder mutex semaphore
@@ -133,6 +144,21 @@ static void reset_goal_buffer_sem()
 {
 	world.goals_buffer.empty_slot_count = xSemaphoreCreateCounting(POSITION_GOAL_BUF_SIZE, POSITION_GOAL_BUF_SIZE);
 	world.goals_buffer.filled_slot_count = xSemaphoreCreateCounting(POSITION_GOAL_BUF_SIZE, 0);
+}
+
+static void copy_goal(PositionGoal* from, PositionGoal* to)
+{
+	to->x = from->x;
+	to->y = from->y;
+	to->phi = from->phi;
+	to->go = from->go;
+}
+
+void copy_encoder(Encoder* from, Encoder* to)
+{
+	to->tickvalue = from->tickvalue;
+	to->time = from->time;
+	to->forward = from->forward;
 }
 
 PositionGoal world_peek_next_goal()
@@ -236,12 +262,61 @@ State world_get_state()
 	return s;
 }
 
-void world_set_state(State s)
+void world_update_encoder(int encoder_id)
 {
-	xSemaphoreTake(world.state_mutex);
-	world.x = s.x;
-	world.y = s.y;
-	world.phi = s.phi;
-	world.stop = s.stop;
-	xSemaphoreGive(world.state_mutex);
+	// call updateEncoder function from odometry.h
+	xSemaphoreTake(world.encoder_mutex);
+	switch(encoder_id)
+	{
+		case ODO_PREV_ENCODER_LEFT : 
+			updateEncoder(&(world.prev_left));
+			world.prev_left.forward = !world.prev_left.forward;
+			world.prev_left.tickvalue = 1023 - world.prev_left.tickvalue;
+			break;
+		
+		case ODO_PREV_ENCODER_RIGHT :
+			updateEncoder(&(world.prev_right));
+			break;
+
+		case ODO_CURR_ENCODER_LEFT :
+			updateEncoder(&(world.curr_left));
+			world.curr_left.forward = !world.curr_left.forward;
+			world.curr_left.tickvalue = 1023 - world.curr_left.tickvalue;
+			break;
+
+		case ODO_CURR_ENCODER_RIGHT :
+			updateEncoder(&(world.curr_right));
+		  	break;
+	}
+	xSemaphoreGive(world.encoder_mutex);
+}
+
+void world_update_state()
+{
+	// save current encoder data in prev encoder structures
+	xSemaphoreTake(world.encoder_mutex);
+	copy_encoder(&(world.curr_left), &(world.prev_left));
+	copy_encoder(&(world.curr_right), &(world.curr_left));
+	xSemaphoreGive(world.encoder_mutex);
+
+	// update encoder values
+	world_update_encoder(ODO_CURR_ENCODER_RIGHT);
+	world_update_encoder(ODO_CURR_ENCODER_LEFT);
+
+	// get displacement based on current tickvalues of encoders
+	State ds = getDisplacement(world.curr_right, world.curr_left,
+								world.prev_right, world.prev_left);
+
+	// update state of the robot
+	xSemaphoreTake(state_mutex);
+  	world.phi += dphi;
+	if (world.phi < -PI) {
+	   	world.phi += 2*PI;
+	}
+	if (world.phi > PI) {
+	  	world.phi += -2*PI;
+	}
+	world.x += dx;
+	world.y += dy;
+	xSemaphoreGive(state_mutex);
 }

@@ -94,5 +94,4 @@ void ctrl_calibphi(float phi);
  */
 char ctrl_getForward();
 
-
 #endif

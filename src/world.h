@@ -112,10 +112,17 @@ Coord world_get_coord();
 State world_get_state();
 
 /**
- * @fn world_set_state()
- * Set the state of the robot
- * @param s the new state of the robot             
+ * @fn world_update_encoder()
+ * Updates the given encoder
+ * @param encoder_id id of the encoder (ODO_****_ENCODER_*****)
  */
-void world_set_state(State s);
+void world_update_encoder(int encoder_id);
+
+/**
+ * @fn world_update_state()
+ * Updates the encoders values (put curr in prev, and get new value for curr) and 
+ * updates the state of the robot
+ */
+void world_update_state();
 
 #endif

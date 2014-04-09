@@ -1,91 +1,34 @@
 xQueueHandle odometryQueue = NULL;
 
-static Encoder el;
-static Encoder er;
-static Encoder last_el;
-static Encoder last_er;
-
 static portTickType cpu_tick;
 
-state currentstate;
-
 extern bool ROBOT_start;
+extern World world;
 
 void odometryTask (void* odometryTask){
-	ortTickType xLastWakeTime;
+	portTickType xLastWakeTime;
 	xLastWakeTime = xTaskGetTickCount();
-
-	er.ulBase = QEI0_BASE;
-	last_er.ulBase = QEI0_BASE;
-	el.ulBase = QEI1_BASE;
-	last_el.ulBase = QEI1_BASE;
-
-	/* Initialization */
-	updateEncoder(&last_el);
-	updateEncoder(&last_er);
-	updateEncoder(&el);
-	updateEncoder(&er);
-
-	updateState();
-	currentstate.stop = true;
 
 	while(!ROBOT_start)
 		vTaskDelayUntil (&xLastWakeTime, (10 / portTICK_RATE_MS));
 
 	while(ROBOT_start){
-		/* Update values of encoders */
-		updateEncoder(&el);
-		updateEncoder(&er);
-
-		/* Compute the current state */
-		updateState();
-
-		/* Send values to the queue */
-		xQueueSend(odometryQueue, (void*) &currentstate, 0);
-
-		/* Wait */
-		vTaskDelayUntil (&xLastWakeTime, (10 / portTICK_RATE_MS));
+		world_update_state();
+      vTaskDelayUntil (&xLastWakeTime, (10 / portTICK_RATE_MS));
 	}
 
-  }
+   while(1){}
 }
 
-
-void updateEncoder(Encoder* enc) {
+void updateEncoder(Encoder* enc) 
+{
    enc->time = xTaskGetTickCount();
    enc->tickvalue = (int) QEIPositionGet(enc->ulBase);
    enc->forward = (QEIDirectionGet(enc->ulBase) == (unsigned long) 1);
-   //enc->velocity = QEIVelocityGet(enc);
-
-   //UARTprintf("tickvalue = %d\n, ", (int) (enc->tickvalue)); // %d = int, %u = uint.
 }
 
-
-void updateState() {
-   last_er.tickvalue = er.tickvalue;
-   last_er.time = er.time;
-   last_er.forward = er.forward;
-   //last_er.velocity = er.velocity;
-
-   last_el.tickvalue = el.tickvalue;
-   last_el.time = el.time;
-   last_el.forward = el.forward;
-   //last_el.velocity = el.velocity;
-
-
-   //UARTprintf("LEFT : ");
-   IntMasterDisable();
-   updateEncoder(&el);
-   updateEncoder(&er);
-   cpu_tick = xTaskGetTickCount();
-   IntMasterEnable();
-   el.tickvalue = 1023 - el.tickvalue;
-   el.forward = !el.forward;
-   //ARTprintf("el = %d, ", (int) (el.tickvalue)); // %d = int, %u = uint. IT WORKS TILL HERE
-   //UARTprintf("er = %d\n", (int) (er.tickvalue)); // %d = int, %u = uint.
-   // Note : can trust forward flag & tickvalue increase when forward
-   
-
+State getDisplacement(Encoder er, Encoder el, Encoder last_er, Encoder last_el)
+{
    // even when on the reversed side.
    int dtr;
    if ((er.forward && (er.tickvalue >= last_er.tickvalue)) ||
@@ -141,34 +84,17 @@ void updateState() {
    float dr = (float) dtr * ENC_TRNSF;
    float dl = (float) dtl * ENC_TRNSF;
 
+   UARTprintf("dr : %d | dl : %d\n", (int) dr, (int) dl);
+
    float dphi = ((dr - dl)/INTER_WHEEL);
    float dx = ((dr + dl)/2) * custom_cos(currentstate.phi); // Approximations! Terms in [1 - cos(dphi)] neglected
    float dy = ((dr + dl)/2) * custom_sin(currentstate.phi); // Approximations! Terms in sin(dphi) taken as dphi.
-   //UARTprintf("dtr = %d\n", dtr);
-   //UARTprintf("dtl = %d\n", dtl);
-   //UARTprintf("dr = %d\n", (int) (dr * 1000.0));
-   //UARTprintf("dl = %d\n", (int) (dl * 1000.0));
-   //UARTprintf("ENC_TRNSF_LOL = %d\n", (int) (ENC_TRNSF * 1000.0));
-   //UARTprintf("dphi = %d\n", (int) (dphi * 1000.0));
-   //UARTprintf("dx = %d\n", (int) (dx * 1000.0));
-   //UARTprintf("dy = %d\n", (int) (dy * 1000.0));
 
-   IntMasterDisable();
-   currentstate.phi += dphi;
-   if (currentstate.phi < -PI) {
-      currentstate.phi += 2*PI;
-   }
-   if (currentstate.phi > PI) {
-      currentstate.phi += -2*PI;
-   }
-   currentstate.x += dx;
-   currentstate.y += dy;
-   IntMasterEnable();
+   State ds;
 
-   //UARTprintf("state (in mm) (x = %d, ", (int) (currentstate.x * 1.0)); // %d = int, %u = uint.
-   //UARTprintf("y = %d, ", (int) (currentstate.y * 1.0)); // %d = int, %u = uint.
-   //UARTprintf("phi = %d (in rad*1000))\n", (int) (currentstate.phi * 1000.0)); // %d = int, %u = uint.
+   ds.x = dx;
+   ds.y = dy:
+   ds.dphi = dphi;
 
-   //State updated.
-
+   return ds;
 }
