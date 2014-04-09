@@ -308,7 +308,8 @@ void world_update_state()
 
 	// get displacement based on current tickvalues of encoders
 	State ds = getDisplacement(world.curr_right, world.curr_left,
-								world.prev_right, world.prev_left);
+								world.prev_right, world.prev_left,
+								world.phi);
 
 	// update state of the robot
 	xSemaphoreTake(world.state_mutex, portMAX_DELAY);

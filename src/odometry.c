@@ -1,4 +1,17 @@
-xQueueHandle odometryQueue = NULL;
+#include "odometry.h"
+
+#pragma GCC diagnostic ignored "-Wchar-subscripts"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
+#ifndef INTER_WHEEL
+   #define INTER_WHEEL 257.0
+#endif
+#ifndef WHEEL_DIAM
+   #define WHEEL_DIAM 59.0
+#endif
+#ifndef ENC_TRNSF
+   #define ENC_TRNSF (WHEEL_DIAM*PI)/(2 * 1024.0 * (36.0/22.0)) // Changé 20 -> 22
+#endif
 
 static portTickType cpu_tick;
 
@@ -27,7 +40,7 @@ void updateEncoder(volatile Encoder* enc)
    enc->forward = (QEIDirectionGet(enc->ulBase) == (unsigned long) 1);
 }
 
-State getDisplacement(Encoder er, Encoder el, Encoder last_er, Encoder last_el)
+State getDisplacement(Encoder er, Encoder el, Encoder last_er, Encoder last_el, float cs_phi)
 {
    // even when on the reversed side.
    int dtr;
@@ -87,14 +100,14 @@ State getDisplacement(Encoder er, Encoder el, Encoder last_er, Encoder last_el)
    UARTprintf("dr : %d | dl : %d\n", (int) dr, (int) dl);
 
    float dphi = ((dr - dl)/INTER_WHEEL);
-   float dx = ((dr + dl)/2) * custom_cos(currentstate.phi); // Approximations! Terms in [1 - cos(dphi)] neglected
-   float dy = ((dr + dl)/2) * custom_sin(currentstate.phi); // Approximations! Terms in sin(dphi) taken as dphi.
+   float dx = ((dr + dl)/2) * custom_cos(cs_phi); // Approximations! Terms in [1 - cos(dphi)] neglected
+   float dy = ((dr + dl)/2) * custom_sin(cs_phi); // Approximations! Terms in sin(dphi) taken as dphi.
 
    State ds;
 
    ds.x = dx;
-   ds.y = dy:
-   ds.dphi = dphi;
+   ds.y = dy;
+   ds.phi = dphi;
 
    return ds;
 }
