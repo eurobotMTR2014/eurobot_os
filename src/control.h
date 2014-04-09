@@ -90,13 +90,8 @@ void ctrl_caliby(float y);
 void ctrl_calibphi(float phi);
 
 /**
-<<<<<<< HEAD
  * @return 0 if going backwards, 1 if going forward, 2 if stopped.
  */
-=======
- *@return 0 if going backwards, 1 if going forward, 2 if stopped.
- **/
->>>>>>> Last_working_commit
 char ctrl_getForward();
 
 #endif
