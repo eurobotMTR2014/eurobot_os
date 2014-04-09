@@ -42,13 +42,13 @@ typedef char bool;
 /// Own includes
 #include "IO_parameters.h"
 #include "custom_math.h"
+#include "world.h"
 #include "tools_lib.h"
 #include "cmdline.h"
 #include "captors.h"
 #include "intel.h"
 #include "control.h"
 #include "gametable.h"
-#include "world.h"
 #include "odometry.h"
 
 void errorReport(char* msg);

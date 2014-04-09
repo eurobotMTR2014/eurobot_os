@@ -1,6 +1,8 @@
 #include "world.h"
 
 #define POSITION_GOAL_BUF_SIZE  500
+#define INIT_X_1 0
+#define INIT_Y_1 0
 
 /*******************/
 /*  GOALS BUFFER   */
@@ -123,7 +125,7 @@ static void init_state()
 	world.y = INIT_Y_1;
 	world.stop = true;
 
-	world.state_mutex = xSemaphoreCreateMutex()
+	world.state_mutex = xSemaphoreCreateMutex();
 }
 
 static void init_captors()
@@ -151,7 +153,7 @@ static void copy_goal(PositionGoal* from, PositionGoal* to)
 	to->x = from->x;
 	to->y = from->y;
 	to->phi = from->phi;
-	to->go = from->go;
+	to->k = from->k;
 }
 
 void copy_encoder(Encoder* from, Encoder* to)
@@ -213,8 +215,8 @@ void world_goal_flush()
 
 	xSemaphoreTake(gb->goals_mutex);
 	// reset semaphores 
-	xSemaphoreDelete(gb->filled_slot_count);
-	xSemaphoreDelete(gb->empty_slot_count);
+	vSemaphoreDelete(gb->filled_slot_count);
+	vSemaphoreDelete(gb->empty_slot_count);
 	reset_goal_buffer_sem();
 
 	gb->in = gb->out = 0;
@@ -226,7 +228,7 @@ void world_goal_remove_peek()
 {
 	GoalsBuffer* gb = &(world.goals_buffer);
 
-	xSemaphoreTake(gb->filled_slot_count);
+	xSemaphoreTake(gb->filled_slot_count, portMAX_DELAY);
 	xSemaphoreTake(gb->goals_mutex);
 
 	gb->out = (gb->out + 1) % POSITION_GOAL_BUF_SIZE;
@@ -240,7 +242,7 @@ Coord world_get_coord()
 {	
 	Coord c;
 	
-	xSemaphoreTake(world.state_mutex);
+	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
 	c.x = world.x;
 	c.y = world.y;
 	xSemaphoreGive(world.state_mutex);
@@ -252,7 +254,7 @@ State world_get_state()
 {
 	State s;
 
-	xSemaphoreTake(world.state_mutex);
+	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
 	s.x = world.x;
 	s.y = world.y;
 	s.phi = world.phi;
@@ -265,7 +267,7 @@ State world_get_state()
 void world_update_encoder(int encoder_id)
 {
 	// call updateEncoder function from odometry.h
-	xSemaphoreTake(world.encoder_mutex);
+	xSemaphoreTake(world.encoder_mutex, portMAX_DELAY);
 	switch(encoder_id)
 	{
 		case ODO_PREV_ENCODER_LEFT : 
@@ -294,7 +296,7 @@ void world_update_encoder(int encoder_id)
 void world_update_state()
 {
 	// save current encoder data in prev encoder structures
-	xSemaphoreTake(world.encoder_mutex);
+	xSemaphoreTake(world.encoder_mutex, portMAX_DELAY);
 	copy_encoder(&(world.curr_left), &(world.prev_left));
 	copy_encoder(&(world.curr_right), &(world.curr_left));
 	xSemaphoreGive(world.encoder_mutex);
@@ -308,15 +310,15 @@ void world_update_state()
 								world.prev_right, world.prev_left);
 
 	// update state of the robot
-	xSemaphoreTake(state_mutex);
-  	world.phi += dphi;
+	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
+  	world.phi += ds.phi;
 	if (world.phi < -PI) {
 	   	world.phi += 2*PI;
 	}
 	if (world.phi > PI) {
 	  	world.phi += -2*PI;
 	}
-	world.x += dx;
-	world.y += dy;
-	xSemaphoreGive(state_mutex);
+	world.x += ds.x;
+	world.y += ds.y;
+	xSemaphoreGive(world.state_mutex);
 }
