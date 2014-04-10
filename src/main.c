@@ -214,6 +214,9 @@ void init()
 
     /// Start module
     GPIOPinTypeGPIOInput(STARTUP_MODULE_PIN_BASE, STARTUP_MODULE_PIN_NB);
+
+    // Init the World
+    init_world();
 }
 
 void blinky (void *pvParameters)
