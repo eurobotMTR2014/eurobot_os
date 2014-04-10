@@ -3,11 +3,8 @@
 #pragma GCC diagnostic ignored "-Wchar-subscripts"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-#ifndef GOALS_POOL
-   #define GOALS_POOL 500
-#endif
-#ifndef EPSILON
-   #define EPSILON 50.0 // e where we say we're at the goal.
+#ifndef DELTA_V_MAX // max speed increment between two control 
+   #define (0.2 * SERVO_MAX_SPEED);
 #endif
 
 #define CONTROL_TRICK_ENABLE
@@ -171,38 +168,42 @@ void tracker(portTickType* xLastWakeTime)
 //   UARTprintf("Angular controller velocity = %X\n", (int) (w * 1000.0));
 
    float right_velocity = (2.0*v + w*INTER_WHEEL)/WHEEL_DIAM,
-         left_velocity = (2.0*v - w*INTER_WHEEL)/WHEEL_DIAM,
-         right_velocity_scaled, left_velocity_scaled;
+         left_velocity = (2.0*v - w*INTER_WHEEL)/WHEEL_DIAM;
+
+   // start sloping
+         // false value -> must adjust
+   float desired_right_velocity = custom_abs(right_velocity),
+         desired_left_velocity = custom_abs(left_velocity);
+
+   ServoSpeed prev_velocity = world_get_servo_speed();
+   prev_velocity.left_speed = custom_abs(prev_velocity.left_speed);
+   prev_velocity.right_speed = custom_abs(prev_velocity.right_speed);
    
-   //UARTprintf("tracker() : servo speed :: (l:r) = (%d:%d)\n", (int) (100*left_velocity), (100*right_velocity));
-//Now let's scale the velocities between [-1, 1]   
-   float rv = (int) right_velocity;
-   if (custom_abs(right_velocity) > custom_abs(left_velocity)) {
-      left_velocity_scaled = left_velocity/custom_abs(right_velocity) ;
-      right_velocity_scaled = right_velocity/custom_abs(right_velocity) ;
-   }
-   else {
-      right_velocity_scaled = right_velocity/custom_abs(left_velocity) ;
-      left_velocity_scaled = left_velocity/custom_abs(left_velocity) ;
-   }
+   float max_right_velocity = min(SERVO_MAX_SPEED, prev_velocity.right_speed + (float) DELTA_V_MAX),
+         max_left_velocity = min(SERVO_MAX_SPEED, prev_velocity.left_speed + (float) DELTA_V_MAX),
+         dist_right = max_right_velocity - desired_right_velocity,
+         dist_left = max_left_velocity - desired_left_velocity,
+         slope_ratio;
 
-   // slope factor computation
+   // find on which side the speed is limitant
+   if(compareFloat(max(dist_left, dist_right), dist_right, 0.00001)) // right speed is the limitant
+      slope_ratio = max_right_velocity / desired_right_velocity;
+   else // left speed is the limitant
+      slope_ratio = max_left_velocity / desired_left_velocity;
 
+   float final_right_velocity = slope_ratio * desired_right_velocity,
+         final_left_velocity = slope_ratio * desired_left_velocity;
 
-   left_velocity = left_velocity_scaled * (float) 0x01FF;
-   right_velocity = right_velocity_scaled * (float) 0x01FF;
-
-   float lv = (int) left_velocity;
-
-   if (left_velocity != custom_abs(left_velocity))
-      lv = custom_absinthe(lv) + 0x0400;
+   // restore direction of the speed
+   if (final_left_velocity != custom_abs(final_left_velocity))
+      final_left_velocity *= -1;
    
-   if (right_velocity != custom_abs(right_velocity))
-      rv = custom_absinthe(rv) + 0x0400;
+   if (final_right_velocity != custom_abs(final_right_velocity))
+      final_right_velocity *= -1;
 
    for (int i = 0; i < 3; i++) {
-      servoLeft(xLastWakeTime, *((char*) &lv + 1), *((char*) &lv));
-      servoRight(xLastWakeTime, *((char*) &rv + 1), *((char*) &rv));
+      setAbsoluteSpeed(SERVO_LEFT, final_left_velocity);
+      setAbsoluteSpeed(SERVO_RIGHT, final_right_velocity);
       servoSync();
    }
 }

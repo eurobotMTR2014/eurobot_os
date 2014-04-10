@@ -16,6 +16,7 @@ typedef struct GoalsBuffer_t {
 	xSemaphoreHandle empty_slot_count,  // semaphore counts the empty slots
 					 filled_slot_count; // semaphore counts the filled slots
 	xSemaphoreHandle goals_mutex; 		// semaphore ensures a mutual exclusion for accessing the buffer
+	
 	PositionGoal goals[POSITION_GOAL_BUF_SIZE]; // buffer
 } GoalsBuffer;
 
@@ -46,6 +47,7 @@ typedef struct World_t {
    	float y;         // position of the robot
    	float phi;       // angle of the robot
    	bool stop;       // true if the robot must stop
+   	ServoSpeed curr_servo_speed; // current speed the the servos
 
    	xSemaphoreHandle state_mutex;
    	xSemaphoreHandle update_state_mutex;
@@ -380,4 +382,29 @@ bool world_get_stop_state()
 	xSemaphoreGive(world.state_mutex);
 
 	return stop;
+}
+
+ServoSpeed world_get_servo_speed()
+{
+	ServoSpeed ss;
+
+	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
+	ss.left_speed = world.curr_servo_speed.left_speed;
+	ss.right_speed = world.curr_servo_speed.right_speed;
+	xSemaphoreGive(world.state_mutex);
+
+	return ss;
+}
+
+void world_get_servo_speed(ServoSpeed ss)
+{
+	// checks input
+	if((custom_abs(ss.left_speed) > (float) 0x3FF) || 
+			(custom_abs(ss.right_speed) > (float) 0x3FF))
+		return;
+
+	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
+	world.curr_servo_speed.left_speed = ss.left_speed;
+	world.curr_servo_speed.right_speed = ss.right_speed;
+	xSemaphoreGive(world.state_mutex);
 }

@@ -85,13 +85,3 @@ void intelligenceTask (void* pvParameters)
     while(1){}
 }
 
-/**
-  * x ==? y
-  */
-
-/*
-bool compareFloat(float x, float y, float eps){
-    return custom_abs((y-x))<eps;
-}
-*/
-
