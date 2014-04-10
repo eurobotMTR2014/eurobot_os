@@ -16,7 +16,6 @@
 static portTickType cpu_tick;
 
 extern bool ROBOT_start;
-extern World world;
 
 void odometryTask (void* odometryTask){
 	portTickType xLastWakeTime;
