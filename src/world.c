@@ -174,7 +174,6 @@ PositionGoal world_peek_next_goal()
 	volatile GoalsBuffer* gb = &(world.goals_buffer);
 	PositionGoal pg;
 	
-	xSemaphoreTake(gb->filled_slot_count, portMAX_DELAY); // waits for data in the buffer
 	xSemaphoreTake(gb->goals_mutex, portMAX_DELAY); // mutex
 
 	pg = gb->goals[gb->out];
@@ -241,6 +240,21 @@ void world_goal_remove_peek()
 	xSemaphoreGive(gb->empty_slot_count);
 }
 
+bool world_goal_isempty()
+{
+	xSemaphoreTake(world.goals_buffer.goals_mutex, portMAX_DELAY);
+	bool ret = (in == out) && (xSemaphoreTake(world.goals_buffer.filled_slot_count, (portTickType) 10) == pdFALSE);
+	xSemaphoreGive(world.goals_buffer.goals_mutex);
+	return ret;
+}
+
+bool world_goal_isfull()
+{
+	xSemaphoreTake(world.goals_buffer.goals_mutex, portMAX_DELAY);
+	bool ret = (in == out) && (xSemaphoreTake(world.goals_buffer.empty_slot_count, (portTickType) 10) == pdFALSE);
+	xSemaphoreGive(world.goals_buffer.goals_mutex);
+	return ret;
+}
 
 Coord world_get_coord()
 {	

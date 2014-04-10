@@ -60,6 +60,18 @@ void world_goal_flush();
 void world_goal_remove_peek();
 
 /**
+ * @fn world_goal_isempty()
+ * Returns true if the buffer of goals is empty
+ */
+bool world_goal_isempty();
+
+/**
+ * @fn world_goal_isfull()
+ * Returns true if the buffer of goals is full
+ */
+bool world_goal_isfull();
+
+/**
  * @fn world_get_coord()
  * Returns the coordinates of the robot
  * @return a Coord struct
