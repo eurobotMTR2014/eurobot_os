@@ -195,6 +195,8 @@ void servoRxBufferClrRAW(unsigned long base);
  */
  char servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed);
 
+ char servoSetAbsoluteSpeed(portTickType* xLastWakeTime, char ID, int abs_speed);
+
 // Manual controls
 char servoForward(portTickType* xLastWakeTime, char ID, char upval, char downval);
 char servoBackward(portTickType* xLastWakeTime, char ID, char upval, char downval);
