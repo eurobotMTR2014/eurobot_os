@@ -41,18 +41,15 @@ void removeCurrentGoalState();
 void updateState();
 void planner();
 void tracker(portTickType* xLastWakeTime);
-void turnToAngle(portTickType* xLastWakeTime,float forced_angle);
 
 void controlTask (void* pvParameters)
 {
    portTickType xLastWakeTime;
    xLastWakeTime = xTaskGetTickCount();
-/*
+
    while (!ROBOT_start)
-   {
       vTaskDelayUntil (&xLastWakeTime, (10 / portTICK_RATE_MS));
-   }
-*/
+
    pln2("Control launched");
   
    world_set_stop_state(true);
@@ -71,8 +68,8 @@ void controlTask (void* pvParameters)
 
 void ctrl_refresh(portTickType* xLastWakeTime) 
 {
-   // if the goal buffer still has some goals in it (or if the robot has to stop)
-   if (!goals_full_or_empty() && !world_get_stop_state()) 
+   // if the goal buffer still has some goals in it and don't have to stop
+   if (!world_goal_isempty() && !world_get_stop_state()) 
    {
       planner();
       tracker(xLastWakeTime);
@@ -84,7 +81,7 @@ void ctrl_refresh(portTickType* xLastWakeTime)
 bool ctrl_restart(portTickType* xLastWakeTime) 
 {
    // No goals or not stopped
-   if(goals_full_or_empty() || !world_get_stop_state())
+   if(world_goal_isempty() || !world_get_stop_state())
    {
       ctrl_stop(xLastWakeTime);
       return false;
@@ -133,7 +130,7 @@ void removeCurrentGoalState()
 
 void planner() 
 {
-   PositionGoal goal = world_pick_next_goal();
+   PositionGoal goal = world_peek_next_goal();
    Coord current = world_get_coord();
 
    u1 = goal.x - current.x;
@@ -142,9 +139,10 @@ void planner()
 
 void tracker(portTickType* xLastWakeTime) 
 {
-   PositionGoal goal = world_pick_next_goal();
+   PositionGoal goal = world_peek_next_goal();
    State currentstate = world_get_state();
 
+   // has it reached the goal?
    if(custom_sqrt(u1*u1 + u2*u2) <= EPSILON) 
    {
       if(goal.stop)
@@ -159,7 +157,7 @@ void tracker(portTickType* xLastWakeTime)
       }
    }
 
-
+   // compute the velocity of the wheels
    float v;
    float w;
    #ifdef CONTROL_TRICK_ENABLE
@@ -186,6 +184,8 @@ void tracker(portTickType* xLastWakeTime)
 
    left_velocity = left_velocity * (float) 0x01FF;
    right_velocity = right_velocity * (float) 0x01FF;
+
+   //UARTprintf("tracker() : servo speed :: (l:r) = (%d:%d)\n", (int) (100*left_velocity), (100*right_velocity));
 
    float rv = (int) right_velocity;
    float lv = (int) left_velocity;

@@ -40,12 +40,12 @@ PositionGoal world_peek_next_goal();
 PositionGoal world_pick_next_goal();
 
 /**
- * @fn world_put goal()
+ * @fn world_goal_put()
  * Put a position goal in the goal buffer
  * @param a pointer to a PositionGoal structure
  * @note The caller is blocked till an empty slot is available in the buffer
  */
-void world_put_goal(PositionGoal pg);
+void world_goal_put(PositionGoal pg);
 
 /**
  * @fn world_goal_flush()
