@@ -175,7 +175,7 @@ void tracker(portTickType* xLastWakeTime)
    float right_velocity = (2.0*v + w*INTER_WHEEL)/WHEEL_DIAM;
    float left_velocity = (2.0*v - w*INTER_WHEEL)/WHEEL_DIAM;
 
-   /*
+   
    // Slope
    float dg = custom_abs(left_velocity - prev_velocity.left_speed),
          dd = custom_abs(right_velocity - prev_velocity.right_speed);
@@ -196,7 +196,7 @@ void tracker(portTickType* xLastWakeTime)
    update.right_speed = right_velocity;
    world_set_servo_speed(update);
 
-   */
+   
 
    //Now let's scale the velocities between [-1, 1]
    if (custom_abs(right_velocity) > custom_abs(left_velocity)) {
