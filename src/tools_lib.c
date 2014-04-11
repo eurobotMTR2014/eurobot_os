@@ -737,3 +737,36 @@ void servoSetRespond(portTickType* xLastWakeTime, char ID, unsigned int value){
 
     servoCmd(ID, INST_WRITE, 2);
 }
+
+void servoReadMaxTorque(portTickType* xLastWakeTime, char ID){
+    servoParam[0] = 0x0E;
+    servoParam[1] = 0x02;
+
+    do{
+        servoCmd(ID, INST_READ, 2);
+    }while(servoListen(xLastWakeTime) != SERVO_RECEIVED_OK);
+
+    UARTprintf("MaxTorque ID = %d : L = %x, H = %x\n", ID, servoBufferRx[5], servoBufferRx[6]);
+}
+
+void servoReadTorqueLimit(portTickType* xLastWakeTime, char ID){
+    servoParam[0] = 0x22;
+    servoParam[1] = 0x02;
+
+    do{
+        servoCmd(ID, INST_READ, 2);
+    }while(servoListen(xLastWakeTime) != SERVO_RECEIVED_OK);
+    
+    UARTprintf("Torque Limit ID = %d : L = %x, H = %x\n", ID, servoBufferRx[5], servoBufferRx[6]);
+}
+
+void servoReadPunch(portTickType* xLastWakeTime, char ID){
+    servoParam[0] = 0x30;
+    servoParam[1] = 0x02;
+
+    do{
+        servoCmd(ID, INST_READ, 2);
+    }while(servoListen(xLastWakeTime) != SERVO_RECEIVED_OK);
+    
+    UARTprintf("Punch ID = %d : L = %x, H = %x\n", ID, servoBufferRx[5], servoBufferRx[6]);
+}

@@ -4,7 +4,7 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 #ifndef DELTA_V_MAX // max speed increment between two control 
-   #define DELTA_V_MAX  22.8/*0.2*SERVO_MAX_SPEED*/
+   #define DELTA_V_MAX  10/*0.2*SERVO_MAX_SPEED*/
 #endif
 
 #define CONTROL_TRICK_ENABLE
@@ -188,15 +188,13 @@ void tracker(portTickType* xLastWakeTime)
    if(dd > DELTA_V_MAX)
    {
       right_velocity = prev_velocity.right_speed + DELTA_V_MAX * custom_sign(right_velocity - prev_velocity.right_speed);
-   }   
+   }
 
    /// Update state (speed)
    ServoSpeed update;
    update.left_speed = left_velocity;
    update.right_speed = right_velocity;
    world_set_servo_speed(update);
-
-   
 
    //Now let's scale the velocities between [-1, 1]
    if (custom_abs(right_velocity) > custom_abs(left_velocity)) {
@@ -208,10 +206,10 @@ void tracker(portTickType* xLastWakeTime)
       left_velocity = left_velocity/custom_abs(left_velocity) ;
    }
 
-   left_velocity = left_velocity * (float) 0x01FF;
-   right_velocity = right_velocity * (float) 0x01FF;
+   left_velocity = left_velocity * (float) SPEED_LIMIT_HEX;
+   right_velocity = right_velocity * (float) SPEED_LIMIT_HEX;
 
-   UARTprintf("tracker() : servo speed :: (l:r) = (%d:%d)\n", (int) (100*left_velocity), (100*right_velocity));
+   UARTprintf("tracker() : servo speed :: (l:r) = (%d:%d)\n", (int) (left_velocity), (int)(right_velocity));
 
    float rv = (int) right_velocity;
    float lv = (int) left_velocity;
@@ -231,7 +229,8 @@ void tracker(portTickType* xLastWakeTime)
    int left = (int) lv;
    int right = (int) rv;
 
-   for(int i = 0 ; i < 3 ; ++i){
+   for(int i = 0 ; i < 3 ; ++i)
+   {
       servoLeft(xLastWakeTime, left>>8, left&0xFF);
       servoRight(xLastWakeTime, right>>8, right&0xFF);
       servoSync();

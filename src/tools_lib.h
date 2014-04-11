@@ -305,5 +305,8 @@ void servoRespond(portTickType* xLastWakeTime, char ID);
  */
 void servoSetRespond(portTickType* xLastWakeTime, char ID, unsigned int value);
 
+void servoReadMaxTorque(portTickType* xLastWakeTime, char ID);
+void servoReadTorqueLimit(portTickType* xLastWakeTime, char ID);
+void servoReadPunch(portTickType* xLastWakeTime, char ID);
 
 #endif // TOOLS_LIB_H_INCLUDED
