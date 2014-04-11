@@ -909,12 +909,12 @@ void seeCaptorsTest(void* pvParameters)
 
         UARTprintf("SHARP : \n");
         for(int i = 0: i < 4; i++)
-            UARTprintf("sharp %d : %u\n", i, sharpBuf[i]);
+            UARTprintf("sharp %d : %u | ", i, sharpBuf[i]);
 
-        UARTprintf("US : \n");
+        UARTprintf("\nUS : \n");
         for(int i = 0; i < 4; i++)
-            UARTprintf("us %d : %u\n", i, usBuf[i]);
-
+            UARTprintf("us %d : %u | ", i, usBuf[i]);
+        UARTprintf("\n");
         vTaskDelayUntil (&xLastWakeTime, (500 / portTICK_RATE_MS));
     }
 
