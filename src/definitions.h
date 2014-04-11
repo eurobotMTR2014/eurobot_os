@@ -102,11 +102,14 @@ typedef struct ServoSpeed_t
 
 /** Mecanical values */
 
-#define SERVO_MAX_SPEED 114/*0x3FF*/
+#define SERVO_MAX_SPEED 114.0/*0x3FF*/
+#define SERVO_MAX_SPEED_HEX 0x3FF
+#define SPEED_LIMIT 90.0 /* User defined */
+#define SPEED_LIMIT_HEX (int)(SERVO_MAX_SPEED_HEX * (SPEED_LIMIT/SERVO_MAX_SPEED))
 #define INTER_WHEEL 257.0
 #define WHEEL_DIAM 59.0
 #define ENC_TRNSF (WHEEL_DIAM*PI)/(2 * 1024.0 * (36.0/22.0)) // Changé 20 -> 22
-#define EPSILON 50.0 // e where we say we're at the goal.
+#define EPSILON 100.0 // e where we say we're at the goal.
 
 /// Own includes
 #include "IO_parameters.h"

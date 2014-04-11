@@ -145,3 +145,8 @@ bool compareFloat(float x, float y, float eps)
 {
     return custom_abs(y-x) <= eps;
 }
+
+float custom_sign(float x)
+{
+  return x < 0.0 ? -1.0 : 1.0;
+}

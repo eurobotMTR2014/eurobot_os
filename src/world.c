@@ -4,6 +4,8 @@
 #define INIT_X_1 0
 #define INIT_Y_1 0
 #define INIT_PHI_1 0
+#define INIT_LEFT_SPEED 0
+#define INIT_RIGHT_SPEED 0
 
 /*******************/
 /*  GOALS BUFFER   */
@@ -363,7 +365,7 @@ void world_update_state()
 	world.x += ds.x;
 	world.y += ds.y;
 
-	//UARTprintf("x : %d | y : %d | phi : %d\n", (int) world.x, (int) world.y, (int) (world.phi*1000));
+	UARTprintf("x : %d | y : %d | phi : %d\n", (int) world.x, (int) world.y, (int) (world.phi*1000));
 
 	xSemaphoreGive(world.state_mutex);
 

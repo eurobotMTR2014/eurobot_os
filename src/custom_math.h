@@ -17,6 +17,7 @@ float custom_sqrt(float x);
 float custom_atan(float z);
 float custom_min(float v1, float v2);
 float custom_max(float v1, float v2);
+float custom_sign(float x);
 bool compareFloat(float x, float y, float eps);
 void seedRandomGen();
 unsigned int getPseudoRandomNumber(unsigned int ceil);

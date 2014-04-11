@@ -194,12 +194,13 @@ void servoRxBufferClrRAW(unsigned long base);
  * @param speed Wanted speed. Have to be between -1.0 and 1.0. The actual value of the speed will be 'speed * 114[RPM]'.
  * @return Result
  */
- void servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed);
+ //void servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed);
 
 /**
   * Idem above with absolute speed (0 <= speed <= 0x3FF)
   */
- void servoSetAbsoluteSpeed(portTickType* xLastWakeTime, char ID, int abs_speed);
+ void servoSetAbsoluteSpeedLeft(portTickType* xLastWakeTime, float abs_speed);
+ void servoSetAbsoluteSpeedRight(portTickType* xLastWakeTime, float abs_speed);
 
 // Manual controls
 char servoForward(portTickType* xLastWakeTime, char ID, char upval, char downval);

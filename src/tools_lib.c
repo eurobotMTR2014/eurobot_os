@@ -375,17 +375,23 @@ void robotBackward(portTickType* xLastWakeTime, unsigned long duration){
 }
 
 /* ================================ */
-    
+/* 
 void servoSetSpeed(portTickType* xLastWakeTime, char ID, float speed){
    servoSetAbsoluteSpeed(xLastWakeTime, ID, (int)(114 * speed));
 }
+*/
 
 // abs_speed -> RPM
-void servoSetAbsoluteSpeed(portTickType* xLastWakeTime, char ID, int abs_speed){
+void servoSetAbsoluteSpeedLeft(portTickType* xLastWakeTime, float abs_speed){
 
-    UARTprintf("abs_speed = %d\n", abs_speed);
+    if(custom_abs(abs_speed) > SPEED_LIMIT){
+        UARTprintf("abs_speed out of range : %d\n",abs_speed);
+        return;
+    }
 
-    int goalSpeed = custom_abs(abs_speed) * (0x3FF/114);
+    int goalSpeed = (int)((custom_abs(abs_speed) / SPEED_LIMIT) * SPEED_LIMIT_HEX);
+
+    UARTprintf("abs_speed = %d and goalSpeed is so = 0x%x\n", (int)abs_speed, goalSpeed);
 
     if(abs_speed < 0){
         goalSpeed |= (0x1 << 10); // Set the 10th bit to 1 
@@ -397,7 +403,33 @@ void servoSetAbsoluteSpeed(portTickType* xLastWakeTime, char ID, int abs_speed){
 
     bool ok;
     do{
-        servoCmd(ID, INST_REG_WRITE, 3);
+        servoCmd(SERVO_LEFT_ID, INST_REG_WRITE, 3);
+        ok = servoCheck(xLastWakeTime);
+    }while(!ok);
+}
+
+void servoSetAbsoluteSpeedRight(portTickType* xLastWakeTime, float abs_speed){
+
+    if(custom_abs(abs_speed) > SPEED_LIMIT){
+        UARTprintf("abs_speed out of range : %d\n",abs_speed);
+        return;
+    }
+
+    int goalSpeed = (int)((custom_abs(abs_speed) / SPEED_LIMIT) * SPEED_LIMIT_HEX);
+
+    UARTprintf("abs_speed = %d and goalSpeed is so = 0x%x\n", (int)abs_speed, goalSpeed);
+
+    if(abs_speed > 0){
+        goalSpeed |= (0x1 << 10); // Set the 10th bit to 1 
+    }
+
+    servoParam[0] = 0x20;
+    servoParam[1] = goalSpeed & 0xFF;
+    servoParam[2] = goalSpeed >> 8;
+
+    bool ok;
+    do{
+        servoCmd(SERVO_RIGHT_ID, INST_REG_WRITE, 3);
         ok = servoCheck(xLastWakeTime);
     }while(!ok);
 }
@@ -498,7 +530,7 @@ void flapGoalAngle(portTickType* xLastWakeTime, int angle, float speed){
     flapParam[2] = angleGoal >> 8;
 
     /* Setting the speed also */
-    int goalSpeed = (SPEED_MAX * custom_abs(speed));
+    int goalSpeed = (SPEED_LIMIT_HEX * custom_abs(speed));
 
     // If speed is < 0, servo will turn clowkwise 
     if(speed < 0){
