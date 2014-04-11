@@ -7,7 +7,7 @@
    #define GOALS_POOL 500
 #endif
 #ifndef EPSILON
-   #define EPSILON 50.0 // e where we say we're at the goal.
+   #define EPSILON 62.5 // e where we say we're at the goal.
 #endif
 
 #define CONTROL_TRICK_ENABLE
@@ -195,10 +195,19 @@ void tracker(portTickType* xLastWakeTime)
    
    if (right_velocity != custom_abs(right_velocity))
       rv = custom_absinthe(rv) + 0x0400;
-
+   /*
    for (int i = 0; i < 3; i++) {
       servoLeft(xLastWakeTime, *((char*) &lv + 1), *((char*) &lv));
       servoRight(xLastWakeTime, *((char*) &rv + 1), *((char*) &rv));
+      servoSync();
+   }*/
+
+   int left = (int) lv;
+   int right = (int) rv;
+
+   for(int i = 0 ; i < 3 ; ++i){
+      servoLeft(xLastWakeTime, left>>8, left&0xFF);
+      servoRight(xLastWakeTime, right>>8, right&0xFF);
       servoSync();
    }
 }

@@ -36,15 +36,26 @@ void intelligenceTask (void* pvParameters)
 
     msg = "ctrl_setNextGoalState";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
+    /*
+    world_add_goal(500, 0, 42, 42, false);
+    world_add_goal(1000, 0, 42, 42, false);
+    world_add_goal(1000, 500, 42, 42, false);
+    world_add_goal(1000, 1000, 42, 42, false);
+    world_add_goal(500, 1000, 42, 42, false);
+    world_add_goal(0, 1000, 42, 42, false);
+    world_add_goal(0, 500, 42, 42, false);
+    world_add_goal(0, 0, 42, 42, true);
+    */
 
-    world_add_goal(900, 0, 42, 42, false);
-    world_add_goal(1200, 0, 42, 42, false);
-    world_add_goal(1500, 1200, 42, 42, false);
-    world_add_goal(1500, 900, 42, 42, false);
-    world_add_goal(1500, 300, 42, 42, false);
-    world_add_goal(1200, 1500, 42, 42, false);
-    world_add_goal(900, 1500, 42, 42, false);
-    world_add_goal(0, 1500, 42, 42, true);
+    world_add_goal(275.25, 0, 42, 42, false);
+    world_add_goal(500, 0, 42, 42, false);
+    world_add_goal(696.85, 26.18, 42, 42, false);
+    world_add_goal(831.17, 82.15, 42, 42, false);
+    world_add_goal(946.83, 216.46, 42, 42, false);
+    world_add_goal(991.6, 350.77, 42, 42, false);
+    world_add_goal(1000, 5000, 42, 42, false);
+    world_add_goal(1002.79, 794.91, 42, 42, false);
+    world_add_goal(1000, 1000, 42, 42, true);
     ctrl_restart(&xLastWakeTime);
 //    int i = 0;
 

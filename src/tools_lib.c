@@ -107,12 +107,6 @@ void servoCmdRAW(char ID, char instruction, char paramLength,
     servoRxBufferClrRAW(base);
 }
 
-void servoCmdParam(char ID, char instruction, char paramLength, char* servoParam)
-{
-    servoCmdRAW(ID, instruction, paramLength,
-                    FLAP_UART, FLAP_CMD_PIN_BASE, FLAP_CMD_PIN_NB,
-                    servoParam, flapBufferTx);
-}
 
 char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* bufferTx, char* bufferRx, unsigned long* rx_ms_wait)
 {
@@ -596,14 +590,14 @@ void servoLeft(portTickType* xLastWakeTime, char upval, char downval)
     servoParam[2] = upval;
 
    //servoCmd(SERVO_LEFT_ID, INST_REG_WRITE, 3);
-    //UARTprintf("servoLeft %x & %x\n", upval, downval);
+    UARTprintf("servoLeft %x & %x\n", (int)upval, (int)downval);
 
-    bool ok;
-    do
-    {
+    //bool ok;
+    //do
+    //{
         servoCmd(1, INST_REG_WRITE, 3);
-        ok = servoCheck(xLastWakeTime);
-    } while (!ok);
+        //ok = servoCheck(xLastWakeTime);
+    //} while (!ok);
     
 }
 
@@ -616,12 +610,12 @@ void servoRight(portTickType* xLastWakeTime, char upval, char downval)
     //servoCmd(SERVO_RIGHT_ID, INST_REG_WRITE, 3);
     //UARTprintf("servoRight %x & %x\n", upval, downval);
     
-    bool ok;
-    do
-    {
-        servoCmd(0, INST_REG_WRITE, 3);
-        ok = servoCheck(xLastWakeTime);
-    } while (!ok);
+    //bool ok;
+    //do
+    //{
+        servoCmd(2, INST_REG_WRITE, 3);
+        //ok = servoCheck(xLastWakeTime);
+    //} while (!ok);
     
 }
 
@@ -769,4 +763,21 @@ void servoSetRespond(portTickType* xLastWakeTime, char ID, unsigned int value){
     servoParam[1] = value;
 
     servoCmd(ID, INST_WRITE, 2);
+}
+
+
+bool servo_ping(portTickType* xLastWakeTime, char ID)
+{
+    servoParam[0] = 0x19;
+    servoParam[1] = 0x01;
+    servoCmd(ID, INST_WRITE, 2);
+    //bool ok = servoCheck(xLastWakeTime);
+    return true;
+}
+
+bool flap_ping(portTickType* xLastWakeTime, char ID)
+{
+    flapCmd(ID, INST_PING, 0, xLastWakeTime);
+    bool ok = flapCheck(xLastWakeTime);
+    return ok;
 }
