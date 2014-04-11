@@ -2,6 +2,7 @@
 #define CONTROLLER
 
 #include "definitions.h"
+#include "world.h"
 
 /**
  * Structure used to define a coordinate. Not sure it's useful.

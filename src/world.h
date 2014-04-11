@@ -11,52 +11,6 @@
 
 /** */
 
-/*********************/
-/*      ODOMETRY     */
-/*********************/
-/**
- * Holds data related to a fetch of the encoders
- */
-typedef struct Encoder_t {
-   int tickvalue; 	     // position at the last update
-   portTickType time;    // time of the last update
-   bool forward;         // true if the encoder goes forward
-   unsigned long ulBase; // QEI peripheral base address
-} Encoder;
-
-/*******************/
-/*   ROBOT STATE   */
-/*******************/
-/**
- * Defines the state of a robot. x, y are the absolute
- * coordinates, phi is the relative angle, and stop is
- * set to true if the robot is idle.
- */
-typedef struct State_t {
-   float x; 		// position of the robot
-   float y;         // position of the robot
-   float phi;       // angle of the robot
-   bool stop;       // true if the robot must stop
-} State;
-
-/********************/
-/*    OBJECTIVES    */
-/********************/
-/**
- * holds a destination of the robot
- */
-typedef struct PositionGoal_t
-{
-	float x; 		// final position
-	float y;		// final position
-	float phi;		// final angle
-	float k;        // curvature
-} PositionGoal;
-
-typedef struct Coord_t {
-   float x;
-   float y;
-} Coord;
 
 /** Initialize the world */
 void init_world();
@@ -67,7 +21,7 @@ void init_world();
  * @return a pointer to the goal
  * @note The caller is blocked till a value is available in the buffer
  */
-const PositionGoal* world_peek_next_goal();
+PositionGoal world_peek_next_goal();
 
 /**
  * @fn world_peek_next_goal()
@@ -75,7 +29,7 @@ const PositionGoal* world_peek_next_goal();
  * @return a pointer to the goal
  * @note The caller is blocked till a value is available in the buffer
  */
-PositionGoal* world_pick_next_goal();
+PositionGoal world_pick_next_goal();
 
 /**
  * @fn world_put goal()
@@ -83,7 +37,7 @@ PositionGoal* world_pick_next_goal();
  * @param a pointer to a PositionGoal structure
  * @note The caller is blocked till an empty slot is available in the buffer
  */
-void world_put_goal(PositionGoal* pg);
+void world_put_goal(PositionGoal pg);
 
 /**
  * @fn world_goal_flush()
@@ -110,5 +64,91 @@ Coord world_get_coord();
  * @return a State struct
  */
 State world_get_state();
+
+/**
+ * @fn world_update_encoder()
+ * Updates the given encoder
+ * @param encoder_id id of the encoder (ODO_****_ENCODER_*****)
+ */
+void world_update_encoder(int encoder_id);
+
+/**
+  * Get the current speed of the robot
+  */
+ServoSpeed world_get_servo_speed();
+
+/**
+  * Set the current speed of the robot
+  */
+void world_set_servo_speed(ServoSpeed new_speed);
+
+/**
+ * @fn world_update_state()
+ * Updates the encoders values (put curr in prev, and get new value for curr) and 
+ * updates the state of the robot
+ */
+void world_update_state();
+
+/**
+ * @fn world_set_stop_state()
+ * Set the value 'stop' of the robot.
+ */
+void world_set_stop_state(bool stop);
+
+/**
+ * @fn world_get_stop_state()
+ * Get the value 'stop' of the robot.
+ */
+bool world_get_stop_state();
+
+/**
+  * @fn goals_full_or_empty
+  * Check if the buffer is full or empty
+  */
+bool goals_full_or_empty();
+
+/**
+ * @fn world_goal_isempty()
+ * Returns true if the buffer of goals is empty
+ */
+bool world_goal_isempty();
+
+/**
+ * @fn world_goal_isfull()
+ * Returns true if the buffer of goals is full
+ */
+bool world_goal_isfull();
+
+/*
+ * Adds a given state to the desired points. REMEMBER phi has to be 42 in most cases (if one want to reach it the fastest possible).
+ **/
+void world_add_goal(float x, float y, float phi, float k, bool stop);
+
+/**
+ * @fn world_set_sharp_vals()
+ * Sets the values of the sharp buffers (size 4)
+ * @param sharpVals an array of size 4 containing the values from the sharps (1->)
+ */
+void world_set_sharp_vals(unsigned long sharpVals[]);
+
+/**
+ * @fn world_get_sharp_vals()
+ * Gets the values of the sharp buffers (size 4)
+ * @param sharpVals an array of size 4 in which will be store the values of the sharp
+ */
+void world_get_sharp_vals(unsigned long sharpVals[]);
+
+/**
+ * @fn world_set_ultra_vals()
+ * Sets the values of the ultrasound captors
+ * @param usVals an array of size 4 containing the values of the captors
+ */
+void world_set_ultra_vals(unsigned long usVals[]);
+
+/**
+ * @fn world_get_ultra_vals()
+ * Gets the values of the ultrasounds 
+ */
+void world_get_ultra_vals(unsigned long usVals[]);
 
 #endif
