@@ -60,6 +60,8 @@ void testCandleTask(void* pvParameters);
 void testQEI(void* pvParameters);
 void testADC(void* pvParameters);
 
+void seeCaptorsTest(void* pvParameters);
+
 int main (void)
 {
     init();
@@ -93,6 +95,7 @@ int main (void)
 
     //xTaskCreate(servoBroadcast, (signed char *) "servoBroadcast", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
     //xTaskCreate(servoCmdLine, (signed char *) "servoCmdLine", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
+    xTaskCreate(seeCaptorsTest, (signed char *) "seeCaptorsTest", 50, NULL, (tskIDLE_PRIORITY + 4), NULL); 
 
     xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
     //xTaskCreate(odometryTask, (signed char*) "odometryTask", 1000, NULL, (tskIDLE_PRIORITY + 4), NULL);
@@ -893,7 +896,30 @@ void batteryReport(unsigned long bVolt)
     xQueueSend(batteryVoltQueue, (void*) &bVolt, 0);
 }
 
+void seeCaptorsTest(void* pvParameters)
+{
+    unsigned long sharpBuf[4], usBuf[4];
 
+    while(ROBOT_start)
+    {
+        sharpBuf = {-1,-1,-1,-1};
+        usBuf = {-1,-1,-1,-1};
+        world_get_sharp_vals(sharpBuf);
+        world_get_ultra_vals(usBuf);
+
+        UARTprintf("SHARP : \n");
+        for(int i = 0: i < 4; i++)
+            UARTprintf("sharp %d : %u\n", i, sharpBuf[i]);
+
+        UARTprintf("US : \n");
+        for(int i = 0; i < 4; i++)
+            UARTprintf("us %d : %u\n", i, usBuf[i]);
+
+        vTaskDelayUntil (&xLastWakeTime, (500 / portTICK_RATE_MS));
+    }
+
+    while(1){}
+}
 
 /**  End of main.c  **/
 
