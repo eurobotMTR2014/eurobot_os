@@ -1,24 +1,18 @@
 #include "world.h"
 
 #define POSITION_GOAL_BUF_SIZE  500
-#define INIT_X_1 0
-#define INIT_Y_1 0
-#define INIT_PHI_1 0
-#define INIT_LEFT_SPEED 0
-#define INIT_RIGHT_SPEED 0
 
 /*******************/
 /*  GOALS BUFFER   */
 /*******************/
 
 typedef struct GoalsBuffer_t {
-	unsigned long in, out;				// index the first empty spot (in) and the first filled spot (out)
+	unsigned long in, out;				// index the first filled spot and the first empty spot
 	 									// of in == out then the buffer is either empty or full
 										// the counting semaphore allows to check emptiness and fullness
 	xSemaphoreHandle empty_slot_count,  // semaphore counts the empty slots
 					 filled_slot_count; // semaphore counts the filled slots
 	xSemaphoreHandle goals_mutex; 		// semaphore ensures a mutual exclusion for accessing the buffer
-	
 	PositionGoal goals[POSITION_GOAL_BUF_SIZE]; // buffer
 } GoalsBuffer;
 
@@ -28,6 +22,7 @@ typedef struct GoalsBuffer_t {
 
 // struct holding the world data
 typedef struct World_t {
+
 	// odometry and captors measures
 	// previous fetch
 	Encoder prev_right;
@@ -49,19 +44,14 @@ typedef struct World_t {
    	float y;         // position of the robot
    	float phi;       // angle of the robot
    	bool stop;       // true if the robot must stop
-   	ServoSpeed curr_servo_speed; // current speed the the servos
 
    	xSemaphoreHandle state_mutex;
-   	xSemaphoreHandle update_state_mutex;
 
    	// goals
 	GoalsBuffer goals_buffer;
 } World;
 
 // semaphores
-// extern functions 
-extern void updateEncoder(volatile Encoder* enc);
-
 // static functions 
 /**
  * Initialize the fields of each encoder structure of the World
@@ -82,22 +72,10 @@ static void init_goals_buffer();
  * Initialize the captors related fields
  */ 
 static void init_captors();
-
 /**
  * Resets counting semaphores og goal buffer
  */
-static void reset_goal_buffer_sem();
-
-/**
- * Copy the content of the first goal structure into the second
- */
-static void copy_goal(volatile PositionGoal* from, volatile PositionGoal* to);
-
-/**
- * Copy the content of the first encoder structure into the second
- * (ulBase field is not copied)
- */
-static void copy_encoder(volatile Encoder* from, volatile Encoder* to);
+void reset_goal_buffer_sem();
 
 // world data
 volatile World world;
@@ -118,10 +96,10 @@ static void init_encoders()
 	world.prev_right.ulBase = QEI0_BASE;
 	world.curr_right.ulBase = QEI0_BASE;
 
-	// update encoder values
+	// sets initial values for the fields
 	updateEncoder(&(world.prev_left));
-	updateEncoder(&(world.prev_right));
 	updateEncoder(&(world.curr_left));
+	updateEncoder(&(world.prev_right));
 	updateEncoder(&(world.curr_right));
 
 	// sets encoder mutex semaphore
@@ -132,15 +110,9 @@ static void init_state()
 {
 	world.x = INIT_X_1;
 	world.y = INIT_Y_1;
-	world.phi = INIT_PHI_1;
 	world.stop = true;
-	
-	world.curr_servo_speed.left_speed = 0;
-	world.curr_servo_speed.right_speed = 0;
 
-
-	world.state_mutex = xSemaphoreCreateMutex();
-	world.update_state_mutex = xSemaphoreCreateMutex();
+	world.state_mutex = xSemaphoreCreateMutex()
 }
 
 static void init_captors()
@@ -163,45 +135,30 @@ static void reset_goal_buffer_sem()
 	world.goals_buffer.filled_slot_count = xSemaphoreCreateCounting(POSITION_GOAL_BUF_SIZE, 0);
 }
 
-static void copy_goal(volatile PositionGoal* from, volatile PositionGoal* to)
+const PositionGoal* world_peek_next_goal()
 {
-	to->x = from->x;
-	to->y = from->y;
-	to->phi = from->phi;
-	to->k = from->k;
-	to->stop = from->stop;
-}
-
-void copy_encoder(volatile Encoder* from, volatile Encoder* to)
-{
-	to->tickvalue = from->tickvalue;
-	to->time = from->time;
-	to->forward = from->forward;
-}
-
-PositionGoal world_peek_next_goal()
-{
-	volatile GoalsBuffer* gb = &(world.goals_buffer);
-	PositionGoal pg;
+	GoalsBuffer* gb = &(world.goals_buffer);
+	PositionGoal* pg;
 	
-	xSemaphoreTake(gb->goals_mutex, portMAX_DELAY); // mutex
+	xSemaphoreTake(gb->filled_slot_count, portMAX_DELAY); // waits for data in the buffer
+	xSemaphoreTake(gb->goals_mutex); // mutex
 
-	pg = gb->goals[gb->out];
+	pg = &(gb->goals[gb->out]);
 
 	xSemaphoreGive(gb->goals_mutex);
 
 	return pg;
 }
 
-PositionGoal world_pick_next_goal()
+PositionGoal* world_pick_next_goal()
 {
-	volatile GoalsBuffer* gb = &(world.goals_buffer);
-	PositionGoal pg;
+	GoalsBuffer* gb = &(world.goals_buffer);
+	PositionGoal* pg;
 	
 	xSemaphoreTake(gb->filled_slot_count, portMAX_DELAY); // waits for data in the buffer
-	xSemaphoreTake(gb->goals_mutex, portMAX_DELAY); // mutex
+	xSemaphoreTake(gb->goals_mutex); // mutex
 
-	pg = gb->goals[gb->out];
+	pg = &(gb->goals[gb->out]);
 	gb->out = (gb->out + 1) % POSITION_GOAL_BUF_SIZE;
 
 	xSemaphoreGive(gb->goals_mutex);
@@ -210,14 +167,14 @@ PositionGoal world_pick_next_goal()
 	return pg;
 }
 
-void world_goal_put(PositionGoal pg)
+void world_put_goal(PositionGoal* pg)
 {
-	volatile GoalsBuffer* gb = &(world.goals_buffer);
+	GoalsBuffer* gb = &(world.goals_buffer);
 
 	xSemaphoreTake(gb->empty_slot_count, portMAX_DELAY);
-	xSemaphoreTake(gb->goals_mutex, portMAX_DELAY);
+	xSemaphoreTake(gb->goals_mutex);
 
-	gb->goals[gb->in] = pg;
+	gb->goals[gb->in] = *pg;
 	gb->in = (gb->in + 1) % POSITION_GOAL_BUF_SIZE;
 
 	xSemaphoreGive(gb->goals_mutex);
@@ -226,10 +183,12 @@ void world_goal_put(PositionGoal pg)
 
 void world_goal_flush()
 {
-	volatile GoalsBuffer* gb = &(world.goals_buffer);
+	GoalsBuffer* gb = &(world.goals_buffer);
 
-	xSemaphoreTake(gb->goals_mutex, portMAX_DELAY);
+	xSemaphoreTake(gb->goals_mutex);
 	// reset semaphores 
+	xSemaphoreDelete(gb->filled_slot_count);
+	xSemaphoreDelete(gb->empty_slot_count);
 	reset_goal_buffer_sem();
 
 	gb->in = gb->out = 0;
@@ -239,10 +198,10 @@ void world_goal_flush()
 
 void world_goal_remove_peek()
 {
-	volatile GoalsBuffer* gb = &(world.goals_buffer);
+	GoalsBuffer* gb = &(world.goals_buffer);
 
-	xSemaphoreTake(gb->filled_slot_count, portMAX_DELAY);
-	xSemaphoreTake(gb->goals_mutex, portMAX_DELAY);
+	xSemaphoreTake(gb->filled_slot_count);
+	xSemaphoreTake(gb->goals_mutex);
 
 	gb->out = (gb->out + 1) % POSITION_GOAL_BUF_SIZE;
 
@@ -250,40 +209,12 @@ void world_goal_remove_peek()
 	xSemaphoreGive(gb->empty_slot_count);
 }
 
-bool world_goal_isempty()
-{
-	xSemaphoreTake(world.goals_buffer.goals_mutex, portMAX_DELAY);
-	bool ret = (world.goals_buffer.in == world.goals_buffer.out) && (xSemaphoreTake(world.goals_buffer.filled_slot_count, (portTickType) 10) == pdFALSE);
-	xSemaphoreGive(world.goals_buffer.goals_mutex);
-	return ret;
-}
-
-bool world_goal_isfull()
-{
-	xSemaphoreTake(world.goals_buffer.goals_mutex, portMAX_DELAY);
-	bool ret = (world.goals_buffer.in == world.goals_buffer.out) && (xSemaphoreTake(world.goals_buffer.empty_slot_count, (portTickType) 10) == pdFALSE);
-	xSemaphoreGive(world.goals_buffer.goals_mutex);
-	return ret;
-}
-
-void world_add_goal(float x, float y, float phi, float k, bool stop)
-{ 
-   PositionGoal next;
-
-   next.x = x;
-   next.y = y;
-   next.phi = phi;
-   next.k = k;
-   next.stop = stop;
-
-   world_goal_put(next);
-}
 
 Coord world_get_coord()
 {	
 	Coord c;
 	
-	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
+	xSemaphoreTake(world.state_mutex);
 	c.x = world.x;
 	c.y = world.y;
 	xSemaphoreGive(world.state_mutex);
@@ -295,7 +226,7 @@ State world_get_state()
 {
 	State s;
 
-	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
+	xSemaphoreTake(world.state_mutex);
 	s.x = world.x;
 	s.y = world.y;
 	s.phi = world.phi;
@@ -303,114 +234,4 @@ State world_get_state()
 	xSemaphoreGive(world.state_mutex);
 
 	return s;
-}
-
-void world_update_encoder(int encoder_id)
-{
-	// call updateEncoder function from odometry.h
-	xSemaphoreTake(world.encoder_mutex, portMAX_DELAY);
-	switch(encoder_id)
-	{
-		case ODO_PREV_ENCODER_LEFT : 
-			updateEncoder(&(world.prev_left));
-			world.prev_left.forward = !world.prev_left.forward;
-			world.prev_left.tickvalue = 1023 - world.prev_left.tickvalue;
-			break;
-		
-		case ODO_PREV_ENCODER_RIGHT :
-			updateEncoder(&(world.prev_right));
-			break;
-
-		case ODO_CURR_ENCODER_LEFT :
-			updateEncoder(&(world.curr_left));
-			world.curr_left.forward = !world.curr_left.forward;
-			world.curr_left.tickvalue = 1023 - world.curr_left.tickvalue;
-			break;
-
-		case ODO_CURR_ENCODER_RIGHT :
-			updateEncoder(&(world.curr_right));
-		  	break;
-	}
-	xSemaphoreGive(world.encoder_mutex);
-}
-
-void world_update_state()
-{
-	xSemaphoreTake(world.update_state_mutex, portMAX_DELAY);
-
-	// save current encoder data in prev encoder structures
-	xSemaphoreTake(world.encoder_mutex, portMAX_DELAY);
-	copy_encoder(&(world.curr_left), &(world.prev_left));
-	copy_encoder(&(world.curr_right), &(world.prev_right));
-	xSemaphoreGive(world.encoder_mutex);
-
-	// update encoder values
-	world_update_encoder(ODO_CURR_ENCODER_RIGHT);
-	world_update_encoder(ODO_CURR_ENCODER_LEFT);
-
-	// get displacement based on current tickvalues of encoders
-	State ds = getDisplacement(world.curr_right, world.curr_left,
-								world.prev_right, world.prev_left,
-								world.phi);
-
-	// update state of the robot
-	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
-	world.phi += ds.phi;
-	if (world.phi < -PI) {
-	   	world.phi += 2*PI;
-	}
-	if (world.phi > PI) {
-	  	world.phi += -2*PI;
-	}
-	world.x += ds.x;
-	world.y += ds.y;
-
-	//UARTprintf("x : %d | y : %d | phi : %d\n", (int) world.x, (int) world.y, (int) (world.phi*1000));
-
-	xSemaphoreGive(world.state_mutex);
-
-	xSemaphoreGive(world.update_state_mutex);
-}
-
-void world_set_stop_state(bool stop)
-{
-	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
-	world.stop = stop;
-	xSemaphoreGive(world.state_mutex);
-}
-
-bool world_get_stop_state()
-{
-	bool stop;
-
-	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
-	stop = world.stop;
-	xSemaphoreGive(world.state_mutex);
-
-	return stop;
-}
-
-ServoSpeed world_get_servo_speed()
-{
-	ServoSpeed ss;
-
-	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
-	ss.left_speed = world.curr_servo_speed.left_speed;
-	ss.right_speed = world.curr_servo_speed.right_speed;
-	xSemaphoreGive(world.state_mutex);
-
-	return ss;
-}
-
-void world_set_servo_speed(ServoSpeed ss)
-{
-	// checks input
-	if((custom_abs(ss.left_speed) > (float) 0x3FF) || 
-			(custom_abs(ss.right_speed) > (float) 0x3FF))
-		return;
-
-	xSemaphoreTake(world.state_mutex, portMAX_DELAY);
-	world.curr_servo_speed.left_speed = ss.left_speed;
-	world.curr_servo_speed.right_speed = ss.right_speed;
-	xSemaphoreGive(world.state_mutex);
 }
