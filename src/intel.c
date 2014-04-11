@@ -41,11 +41,18 @@ void intelligenceTask (void* pvParameters)
     world_add_goal(1000, 0, 42, 42, false);
     world_add_goal(1200, 0, 42, 42, false);
     world_add_goal(1500, 0, 42, 42, false);
-    world_add_goal(1900, 0, 42, 42, false);
-    world_add_goal(2100, 0, 42, 42, false);
-    world_add_goal(2300, 0, 42, 42, false);
-    world_add_goal(2500, 0, 42, 42, false);
-    world_add_goal(2800, 0, 42, 42, true);
+    world_add_goal(1500, 500, 42, 42, false);
+    world_add_goal(1500, 1000, 42, 42, false);
+    world_add_goal(1500, 1200, 42, 42, false);
+    world_add_goal(1500, 1500, 42, 42, false);
+    world_add_goal(1200, 1500, 42, 42, false);
+    world_add_goal(1000, 1500, 42, 42, false);
+    world_add_goal(500, 1500, 42, 42, false);
+    world_add_goal(0, 1500, 42, 42, false);
+    world_add_goal(0, 1200, 42, 42, false);
+    world_add_goal(0, 1000, 42, 42, false);
+    world_add_goal(0, 500, 42, 42, false);
+    world_add_goal(0, 0, 42, 42, true);
     ctrl_restart(&xLastWakeTime);
 //    int i = 0;
 
