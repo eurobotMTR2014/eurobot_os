@@ -142,7 +142,7 @@ void tracker(portTickType* xLastWakeTime)
 
    //UARTprintf("Current (x;y) = (%d;%d)    Goal (x;y) = (%d;%d)\n", (int) currentstate.x, (int) currentstate.y, (int) goal.x, (int) goal.y);
 
-   //ServoSpeed prev_velocity = world_get_servo_speed();
+   ServoSpeed prev_velocity = world_get_servo_speed();
 
    // has it reached the goal?
    if(custom_sqrt(u1*u1 + u2*u2) <= EPSILON) 
@@ -211,7 +211,7 @@ void tracker(portTickType* xLastWakeTime)
    left_velocity = left_velocity * (float) 0x01FF;
    right_velocity = right_velocity * (float) 0x01FF;
 
-   //UARTprintf("tracker() : servo speed :: (l:r) = (%d:%d)\n", (int) (100*left_velocity), (100*right_velocity));
+   UARTprintf("tracker() : servo speed :: (l:r) = (%d:%d)\n", (int) (100*left_velocity), (100*right_velocity));
 
    float rv = (int) right_velocity;
    float lv = (int) left_velocity;
