@@ -38,30 +38,37 @@ void DELAY_FETCH()
 }
 
 extern xQueueHandle screenMsgQueue;
+/*guigui
 extern xSemaphoreHandle usBufSwitchMutex;
 extern xSemaphoreHandle sharpBufSwitchMutex;
 
 bool usBufSwitch = false;
 bool sharpBufSwitch = false;
+
 unsigned long ultraValsBuf1Init[4];
 unsigned long ultraValsBuf2Init[4];
 
 unsigned long sharpValsBuf1Init[4];
 unsigned long sharpValsBuf2Init[4];
-
+*/
 unsigned long batteryBuf;
-
+/*guigui
 unsigned long* ultraValsBuf1 = ultraValsBuf1Init;
 unsigned long* ultraValsBuf2 = ultraValsBuf2Init;
 unsigned long* sharpValsBuf1 = sharpValsBuf1Init;
 unsigned long* sharpValsBuf2 = sharpValsBuf2Init;
 unsigned long* ultraVals = ultraValsBuf1Init;
+*/
+
+unsigned long ultraVals[4]; //guigui
+unsigned long sharpVals[4]; //guigui
+
 unsigned long ultraValsMed1[5];
 unsigned long ultraValsMed2[5];
 unsigned long ultraValsMed3[5];
 unsigned long ultraValsMed4[5];
 unsigned char ultraCount = 0;
-unsigned long* sharpVals = sharpValsBuf1Init;
+//guigui unsigned long* sharpVals = sharpValsBuf1Init;
 
 /**
  * @fn captorSelect
@@ -260,12 +267,15 @@ void fetchBat()
 
 void sharpNewValue()
 {
+/*guigui
     //UARTprintf("SHARP [0] = %d  \t [1] = %d  \t [2] = %d \n", sharpVals[0], sharpVals[1], sharpVals[2]);
     xSemaphoreTake(sharpBufSwitchMutex, portMAX_DELAY);
     sharpBufSwitch = !sharpBufSwitch;
     xSemaphoreGive(sharpBufSwitchMutex);
 
     sharpVals = (sharpBufSwitch) ? sharpValsBuf2 : sharpValsBuf1;
+*/
+	world_set_sharp_vals(sharpVals); //guigui
 }
 
 void stackOverflowSort(unsigned long* data, char N) {
@@ -318,11 +328,14 @@ void USNewValue(char count)
 //    UARTprintf("Average values[0] = %d   \t[1] = %d \t [2] = %d \t [3] = %d\n", ultraVals[0], ultraVals[1], ultraVals[2], ultraVals[3]);
 //    UARTprintf("Median values[0] = %d   \t[1] = %d \t [2] = %d \t [3] = %d\n", ultraValsMed1[2], ultraValsMed2[2], ultraValsMed3[2], ultraVals[3]);
 
+/*guigui	
     xSemaphoreTake(usBufSwitchMutex, portMAX_DELAY);
     usBufSwitch = !usBufSwitch;
     xSemaphoreGive(usBufSwitchMutex);
 
     ultraVals = (usBufSwitch) ? ultraValsBuf2 : ultraValsBuf1;
+*/
+	world_set_ultra_vals(ultraVals);//guigui
 
     ultraVals[0] = 0;
     ultraVals[1] = 0;
