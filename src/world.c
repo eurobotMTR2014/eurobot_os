@@ -381,3 +381,48 @@ bool world_get_stop_state()
 
 	return stop;
 }
+
+void world_set_sharp_vals(unsigned long sharpVals[]){
+	xSemaphoreTake(sharp_mutex, portMAX_DELAY);
+
+	world.sharp_vals[0] = sharpVals[0];
+	world.sharp_vals[1] = sharpVals[1];
+	world.sharp_vals[2] = sharpVals[2];
+	world.sharp_vals[0] = sharpVals[3];
+	
+	xSemaphoreGive(sharp_mutex);
+}
+
+// must provide an array of 4 unsigned long
+void world_get_sharp_vals(unsigned long sharpVals[]){
+	xSemaphoreTake(sharp_mutex, portMAX_DELAY);
+
+	sharpVals[0] = world.sharp_vals[0];
+	sharpVals[1] = world.sharp_vals[1];
+	sharpVals[2] = world.sharp_vals[2];
+	sharpVals[0] = world.sharp_vals[3];
+	
+	xSemaphoreGive(sharp_mutex);
+}
+
+void world_set_ultra_vals(unsigned long usVals[]){
+	xSemaphoreTake(ultra_mutex, portMAX_DELAY);
+
+	world.ultra_vals[0] = usVals[0];
+	world.ultra_vals[1] = usvals[1];
+	world.ultra_vals[2] = usVals[2];
+	world.ultra_vals[0] = usVals[3];
+	
+	xSemaphoreGive(ultra_mutex);
+}
+
+void world_set_ultra_vals(unsigned long usVals[]){
+	xSemaphoreTake(ultra_mutex, portMAX_DELAY);
+
+	usVals[0] = world.ultra_vals[0];
+	usVals[1] = world.ultra_vals[1];
+	usvals[2] = world.ultra_vals[2];
+	usvals[0] = world.ultra_vals[3];
+	
+	xSemaphoreGive(ultra_mutex);
+}

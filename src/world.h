@@ -122,4 +122,30 @@ bool goals_full_or_empty();
  **/
 void world_add_goal(float x, float y, float phi, float k, bool stop);
 
+/**
+ * @fn world_set_sharp_vals()
+ * Sets the values of the sharp buffers (size 4)
+ * @param sharpVals an array of size 4 containing the values from the sharps (1->)
+ */
+void world_set_sharp_vals(unsigned long sharpVals[]);
+
+/**
+ * @fn world_get_sharp_vals()
+ * Gets the values of the sharp buffers (size 4)
+ * @param sharpVals an array of size 4 in which will be store the values of the sharp
+ */
+void world_get_sharp_vals(unsigned long sharpVals[]);
+
+/**
+ * @fn world_set_ultra_vals()
+ * Sets the values of the ultrasound captors
+ * @param usVals an array of size 4 containing the values of the captors
+ */
+void world_set_ultra_vals(unsigned long usVals[]);
+
+/**
+ * @fn world_get_ultra_vals()
+ * Gets the values of the ultrasounds 
+ */
+void world_get_ultra_vals(unsigned long usVals[]);
 #endif
