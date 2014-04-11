@@ -86,7 +86,7 @@ State getDisplacement(Encoder er, Encoder el, Encoder last_er, Encoder last_el, 
    float dr = (float) dtr * ENC_TRNSF;
    float dl = (float) dtl * ENC_TRNSF;
 
-   UARTprintf("dr : %d | dl : %d --- ", (int) dr, (int) dl);
+   //UARTprintf("dr : %d | dl : %d --- ", (int) dr, (int) dl);
 
    float dphi = ((dr - dl)/INTER_WHEEL);
    float dx = ((dr + dl)/2) * custom_cos(cs_phi); // Approximations! Terms in [1 - cos(dphi)] neglected

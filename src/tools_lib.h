@@ -50,8 +50,8 @@
 
 
 /* ============== 2014 ============== */
-#define SERVO_LEFT_ID 0
-#define SERVO_RIGHT_ID 1
+#define SERVO_LEFT_ID 1
+#define SERVO_RIGHT_ID 2
 
 #define FLAP_ID 3
 #define FLAP_LIMIT_UP 230
@@ -297,6 +297,11 @@ void servoRespond(portTickType* xLastWakeTime, char ID);
  *   - 0x02 : Always respond 
  */
 void servoSetRespond(portTickType* xLastWakeTime, char ID, unsigned int value);
+
+
+bool servo_ping(portTickType* xLastWakeTime, char ID);
+
+bool flap_ping(portTickType* xLastWakeTime, char ID);
 
 
 #endif // TOOLS_LIB_H_INCLUDED

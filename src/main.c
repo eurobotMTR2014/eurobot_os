@@ -60,6 +60,8 @@ void testCandleTask(void* pvParameters);
 void testQEI(void* pvParameters);
 void testADC(void* pvParameters);
 
+void servoPing(void* pvParameters);
+
 int main (void)
 {
     init();
@@ -87,22 +89,28 @@ int main (void)
 
     // Creating tasks
     xTaskCreate(idleTask, (signed char *) "idleTask", 40, NULL, (tskIDLE_PRIORITY), NULL);
-    xTaskCreate(idleStat, (signed char *) "idleStat", 100, NULL, (tskIDLE_PRIORITY+1), NULL);
-    xTaskCreate(blinky, (signed char *) "blinky", 40, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    //xTaskCreate(idleStat, (signed char *) "idleStat", 100, NULL, (tskIDLE_PRIORITY+1), NULL);
+    //xTaskCreate(blinky, (signed char *) "blinky", 40, NULL, (tskIDLE_PRIORITY + 2), NULL);
     xTaskCreate(launchOLED, (signed char *) "launchOLED", 100, NULL, (tskIDLE_PRIORITY + 2), NULL);
 
     //xTaskCreate(servoBroadcast, (signed char *) "servoBroadcast", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
     //xTaskCreate(servoCmdLine, (signed char *) "servoCmdLine", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
-
+    //xTaskCreate(servoPing, (signed char *) "servoPing", 100, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    
     xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
     xTaskCreate(odometryTask, (signed char*) "odometryTask", 1000, NULL, (tskIDLE_PRIORITY + 4), NULL);
     //xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
-    //TaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
-    //xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+
+
+
 
     pln("Launching scheduler");
     vTaskStartScheduler();
     pln("Out of scheduler!");
+
+
 
 
     while(1)
@@ -426,7 +434,7 @@ void ROOTtask(void* pvParameters)
     msg = "Checking servo status";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
-    servoRespond(&xLastWakeTime, 0);
+    servoRespond(&xLastWakeTime, 2);
     servoRespond(&xLastWakeTime, 1);
 
     /*
@@ -553,7 +561,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
 
-    servoCmd(0, INST_PING, 0);
+    servoCmd(2, INST_PING, 0);
     if (!servoCheck(xLastWakeTime))
     {
         ok = false;
@@ -629,6 +637,37 @@ void servoInit(portTickType* xLastWakeTime)
 
     servoSTOP();
 }
+
+/*
+void servoPing(void* pvParameters)
+{
+    portTickType xLastWakeTime;
+    xLastWakeTime = xTaskGetTickCount();
+
+    char* msg = pvPortMalloc(sizeof(char) * 21);
+
+    msg = "Checking servo status";
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
+
+    int i = 0;
+    for(i = 0 ; true ; ++i)
+    {
+        UARTprintf("============= SERVOPING - i = %d\n", i);
+        msg = "Servo ping";
+        xQueueSend(screenMsgQueue, (void*) &msg, 0);
+        //servo_ping(xLastWakeTime, 1);
+        //servo_ping(xLastWakeTime, 2);
+        servoSetSpeed(xLastWakeTime, 2, 0.5);
+        servoSync();
+        //flap_ping(xLastWakeTime, 3);
+
+        vTaskDelayUntil (&xLastWakeTime, (500 / portTICK_RATE_MS));
+    }
+
+    while(1){}
+}
+*/
+
 
 void testGiftTask(void* pvParameters)
 {
