@@ -50,7 +50,7 @@
 
 
 /* ============== 2014 ============== */
-#define SERVO_LEFT_ID 1
+#define SERVO_LEFT_ID 4
 #define SERVO_RIGHT_ID 2
 
 #define FLAP_ID 3
@@ -62,7 +62,7 @@
 
 
 
-void servoLEDWrite();
+void servoLEDWrite(portTickType* xLastWakeTime);
 
 
 /// Servo library
@@ -84,15 +84,6 @@ void servoCmdRAW(char ID, char instruction, char paramLength,
                   unsigned long base, unsigned long ctrl_pin_base, unsigned long ctrl_pin_nb,
                   char* servoParam, char* servoBufferTx);
 
-/**
- * @fn servoCmdParam
- * Sends instruction to a servo 
- * @param ID id of the servo
- * @param instruction instruction code
- * @param paramLength nb_parameters
- * @param servoParam array containing the parameters of the instruction
- */
-void servoCmdParam(char ID, char instruction, char paramLength, char* servoParam);
 
 /**
  * @fn servoListenRAW

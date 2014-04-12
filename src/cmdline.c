@@ -20,7 +20,7 @@ extern char flapRxStatus[];
 extern char servoRxParams[];
 extern char flapRxParams[];
 
-volatile bool launchcmd = false;
+volatile bool launchcmd = true;
 
 void servoCmdLine(void* pvParameters)
 {

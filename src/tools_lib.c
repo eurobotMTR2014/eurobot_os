@@ -30,19 +30,29 @@ extern xQueueHandle screenMsgQueue;
 static unsigned long rx_servo_ms_wait = UART_RX_MS_WAIT; // Static here to avoid stack overflows
 static unsigned long rx_flap_ms_wait = UART_RX_MS_WAIT; // Static here to avoid stack overflows
 
-void servoLEDWrite()
+void servoLEDWrite(portTickType* xLastWakeTime)
 {
 
     //char params[2];
     // ALLUMER LES LEDS
     servoParam[0] = 0x19;
     servoParam[1] = 0x01;
+    //flapParam[0] = 0x19;
+    //flapParam[1] = 0x01;
 
-    servoCmdRAW(0, INST_WRITE, 2, SERVO_UART, SERVO_CMD_PIN_BASE, SERVO_CMD_PIN_NB, servoParam, servoBufferTx);
+    //do{
+        servoCmdRAW(2, INST_WRITE, 2, SERVO_UART, SERVO_CMD_PIN_BASE, SERVO_CMD_PIN_NB, servoParam, servoBufferTx);
+        //flapCmdUnchecked(SERVO_BROADCAST, INST_WRITE, 2);
 
-    servoCmdRAW(1, INST_WRITE, 2, SERVO_UART, SERVO_CMD_PIN_BASE, SERVO_CMD_PIN_NB, servoParam, servoBufferTx);
+        //vTaskDelayUntil (xLastWakeTime, (200 / portTICK_RATE_MS));
+    //}while(true);
+
+    
+
+    //servoCmdRAW(4, INST_WRITE, 2, SERVO_UART, SERVO_CMD_PIN_BASE, SERVO_CMD_PIN_NB, servoParam, servoBufferTx);
 
     // CONTROLE EN POSITION
+    /*
     servoParam[0] = 0x1E;
     servoParam[1] = 0x00;
     servoParam[2] = 0x02;
@@ -50,6 +60,7 @@ void servoLEDWrite()
     servoParam[4] = 0x02;
 
     servoCmdRAW(1, INST_WRITE, 5, SERVO_UART, SERVO_CMD_PIN_BASE, SERVO_CMD_PIN_NB, servoParam, servoBufferTx);
+    */
 
 }
 
@@ -109,18 +120,10 @@ void servoCmdRAW(char ID, char instruction, char paramLength,
     servoRxBufferClrRAW(base);
 }
 
-void servoCmdParam(char ID, char instruction, char paramLength, char* servoParam)
-{
-    servoCmdRAW(ID, instruction, paramLength,
-                    FLAP_UART, FLAP_CMD_PIN_BASE, FLAP_CMD_PIN_NB,
-                    servoParam, flapBufferTx);
-}
 
 char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* bufferTx, char* bufferRx, unsigned long* rx_ms_wait)
 {
     char received = 0;
-
-    char* msg = pvPortMalloc(sizeof(char) * 21);
 
     while (received < 4)
     {
@@ -135,9 +138,6 @@ char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* buffe
             *rx_ms_wait = UART_RX_MS_WAIT;
             pln2("SERVO DOWN!!!");
             UARTprintf("SERVO NOT RESPONDING: %d ", bufferRx[2]);
-
-            msg = "Servo not resp.";
-            xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
             return SERVO_NOT_RESP;
         }
@@ -164,13 +164,11 @@ char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* buffe
         ++received;
     }
 
+
     if (bufferRx[0] != 0xFF || bufferRx[1] != 0xFF)
     {
         pln("Servo Head error");
         servoRxBufferClrRAW(base);
-
-        msg = "Head error";
-        xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
         return SERVO_HEAD_ERROR; // Head error
     }
@@ -242,6 +240,7 @@ char servoListenRAW(portTickType* xLastWakeTime, unsigned long base, char* buffe
 
     servoRxBufferClrRAW(base);
     return SERVO_RECEIVED_OK;
+    UARTprintf("servoListenRAW end\n");
 }
 
 void servoCmd(char ID, char instruction, char paramLength)
@@ -271,7 +270,6 @@ void flapCmdUnchecked(char ID, char instruction, char paramLength)
 bool servoCheck(portTickType* xLastWakeTime)
 {
     bool retval = true;
-    char* msg = pvPortMalloc(sizeof(char) * 21);
     
     char rval = servoListen(xLastWakeTime);
     if (rval != SERVO_RECEIVED_OK)
@@ -281,18 +279,16 @@ bool servoCheck(portTickType* xLastWakeTime)
 
         errorReport("Servo proto error!");
     }
-    
+
     if (!servoRcvStatusOK())
     {
         retval = false;
 
         UARTprintf("Servo reception error: (id ; error) %x ; %x\n", servoBufferRx[2], servoBufferRx[4]);
 
-        msg = "Reception error";
-        xQueueSend(screenMsgQueue, (void*) &msg, 0);
-
         errorReport("Servo ack error!");
     }
+
 
     return retval;
 }
@@ -355,8 +351,8 @@ void servoRxBufferClrRAW(unsigned long base)
 /* ======== Move the robot ======== */
 
 void robotForward(portTickType* xLastWakeTime, unsigned long duration){
-    servoSetSpeed(xLastWakeTime, SERVO_RIGHT_ID, -0.4);
-    servoSetSpeed(xLastWakeTime, SERVO_LEFT_ID, 0.4);
+    servoSetAbsoluteSpeedLeft(xLastWakeTime, 114.0);
+    servoSetAbsoluteSpeedRight(xLastWakeTime, 114.0);
 
     servoSync();
 
@@ -365,8 +361,8 @@ void robotForward(portTickType* xLastWakeTime, unsigned long duration){
 }
 
 void robotBackward(portTickType* xLastWakeTime, unsigned long duration){
-    servoSetSpeed(xLastWakeTime, SERVO_RIGHT_ID, 0.4);
-    servoSetSpeed(xLastWakeTime, SERVO_LEFT_ID, -0.4);
+    servoSetAbsoluteSpeedLeft(xLastWakeTime, -114.0);
+    servoSetAbsoluteSpeedRight(xLastWakeTime, -114.0);
 
     servoSync();
 
@@ -596,28 +592,11 @@ void servoRight(portTickType* xLastWakeTime, char upval, char downval)
 }
 
 
-
-/*
-void servoLeft(portTickType* xLastWakeTime, char upval, char downval){
-    if(upval == 0x00 && downval == 0x00)
-        servoSetSpeed(xLastWakeTime, 1, 0);
-    else
-        servoSetSpeed(xLastWakeTime, 1, 0.4);
-}
-
-void servoRight(portTickType* xLastWakeTime, char upval, char downval){
-    if(upval == 0x00 && downval == 0x00)
-        servoSetSpeed(xLastWakeTime, 0, 0);
-    else
-        servoSetSpeed(xLastWakeTime, 0, -0.4);
-}
-*/
-
-
 void servoSync()
 {
     servoCmd(SERVO_BROADCAST, INST_ACTION, 0);
 }
+
 
 float ultrason_convert(unsigned long value){
 
@@ -640,8 +619,6 @@ float sharp_convert(unsigned long value)
 }
 
 
-
-
 void throwSpear(portTickType* xLastWakeTime){
 
     GPIOPinWrite(CANON_PIN_BASE, CANON_PIN_NB, PIN_ON);
@@ -662,49 +639,53 @@ void throwSomeSpears(portTickType* xLastWakeTime, unsigned int num, unsigned lon
     }
 }
 
-
-
 void servoBroadcast(void* pvParameters)
 {
     portTickType xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
-    //char* msg = pvPortMalloc(sizeof(char) * 21);
-
-    //servoForwardFULL(&xLastWakeTime, 0);
-    servoLEDWrite();
 
     // !!!!!!!! UART1 -> UART2  !!!!!!!!!
-    /*for (int i = 0; i < 256; ++i)
+    for (int i = 0; i < 256; ++i)
     {
-        if(2000000/(i+1) < 100000)
+        if(2000000/(i+1) < 50000)
             break;
 
-        UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), 2000000/(i+1),
+        UARTConfigSetExpClk(UART1_BASE, SysCtlClockGet(), 2000000/(i+1),
                             (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
 
         servoParam[0] = 0x19; // LED
         servoParam[1] = 0x01; // Value 1
         servoCmd(SERVO_BROADCAST, INST_WRITE, 2);
+        
+        UARTprintf("Write at baudrate : %d\n", 2000000/(i+1));
 
-        m_itoa(i, msg, 10);
-        xQueueSend(screenMsgQueue, (void*) &msg, 0);
+        vTaskDelayUntil (&xLastWakeTime, (1500 / portTICK_RATE_MS));
 
-        vTaskDelayUntil (&xLastWakeTime, (500 / portTICK_RATE_MS));
+        servoParam[0] = 0x19; // LED
+        servoParam[1] = 0x00; // Value 0
+        servoCmd(SERVO_BROADCAST, INST_WRITE, 2);
+
+        servoParam[0] = 0x04; // baud rate register
+        servoParam[1] = 0x09; // 200000 baud
+        servoCmd(SERVO_BROADCAST, INST_WRITE, 2);
+
+        vTaskDelayUntil (&xLastWakeTime, (200 / portTICK_RATE_MS));
     }
 
 
-    UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), 200000,
+    UARTConfigSetExpClk(UART1_BASE, SysCtlClockGet(), 200000,
                         (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
 
 
+    UARTprintf("Set ping to 1 and address to 2\n");
 
-    m_itoa(256, msg, 10);
-    xQueueSend(screenMsgQueue, (void*) &msg, 0);
+    servoParam[0] = 0x03; // ID
+    servoParam[1] = 0x03; // Value 3
+    servoCmd(SERVO_BROADCAST, INST_WRITE, 2);
+
     servoParam[0] = 0x19; // LED
     servoParam[1] = 0x01; // Value 1
-    servoCmd(SERVO_BROADCAST, INST_WRITE, 2);
-    */
-
+    servoCmd(2, INST_WRITE, 2);
 
     while(1){
         vTaskDelayUntil (&xLastWakeTime, (100000 / portTICK_RATE_MS));
@@ -770,3 +751,4 @@ void servoReadPunch(portTickType* xLastWakeTime, char ID){
     
     UARTprintf("Punch ID = %d : L = %x, H = %x\n", ID, servoBufferRx[5], servoBufferRx[6]);
 }
+

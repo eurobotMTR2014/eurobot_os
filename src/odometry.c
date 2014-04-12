@@ -14,6 +14,7 @@ void odometryTask (void* odometryTask){
 	while(!ROBOT_start)
 		vTaskDelayUntil (&xLastWakeTime, (10 / portTICK_RATE_MS));
 
+   UARTprintf("Begin odometry\n");
 	while(ROBOT_start){
 		world_update_state();
       vTaskDelayUntil (&xLastWakeTime, (10 / portTICK_RATE_MS));

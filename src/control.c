@@ -53,7 +53,6 @@ void controlTask (void* pvParameters)
 
    while (!controlStop)
    {
-      //UARTprintf("Control alive");
       if (ROBOT_start) 
         ctrl_refresh(&xLastWakeTime);
       
@@ -132,6 +131,7 @@ void planner()
 
    u1 = goal.x - current.x;
    u2 = goal.y - current.y;
+
 }
 
 
@@ -139,10 +139,10 @@ void tracker(portTickType* xLastWakeTime)
 {
    PositionGoal goal = world_peek_next_goal();
    State currentstate = world_get_state();
+ 
+   UARTprintf("Current (x;y) = (%d;%d)    Goal (x;y) = (%d;%d)\n", (int) currentstate.x, (int) currentstate.y, (int) goal.x, (int) goal.y);
 
-   //UARTprintf("Current (x;y) = (%d;%d)    Goal (x;y) = (%d;%d)\n", (int) currentstate.x, (int) currentstate.y, (int) goal.x, (int) goal.y);
-
-   ServoSpeed prev_velocity = world_get_servo_speed();
+   //   ServoSpeed prev_velocity = world_get_servo_speed();
 
    // has it reached the goal?
    if(custom_sqrt(u1*u1 + u2*u2) <= EPSILON) 
@@ -175,7 +175,7 @@ void tracker(portTickType* xLastWakeTime)
    float right_velocity = (2.0*v + w*INTER_WHEEL)/WHEEL_DIAM;
    float left_velocity = (2.0*v - w*INTER_WHEEL)/WHEEL_DIAM;
 
-   
+   /*
    // Slope
    float dg = custom_abs(left_velocity - prev_velocity.left_speed),
          dd = custom_abs(right_velocity - prev_velocity.right_speed);
@@ -189,12 +189,15 @@ void tracker(portTickType* xLastWakeTime)
    {
       right_velocity = prev_velocity.right_speed + DELTA_V_MAX * custom_sign(right_velocity - prev_velocity.right_speed);
    }
+   */
 
+   /*
    /// Update state (speed)
    ServoSpeed update;
    update.left_speed = left_velocity;
    update.right_speed = right_velocity;
    world_set_servo_speed(update);
+   */
 
    //Now let's scale the velocities between [-1, 1]
    if (custom_abs(right_velocity) > custom_abs(left_velocity)) {
@@ -209,7 +212,7 @@ void tracker(portTickType* xLastWakeTime)
    left_velocity = left_velocity * (float) SPEED_LIMIT_HEX;
    right_velocity = right_velocity * (float) SPEED_LIMIT_HEX;
 
-   UARTprintf("tracker() : servo speed :: (l:r) = (%d:%d)\n", (int) (left_velocity), (int)(right_velocity));
+   //UARTprintf("tracker() : servo speed :: (l:r) = (%d:%d)\n", (int) (left_velocity), (int)(right_velocity));
 
    float rv = (int) right_velocity;
    float lv = (int) left_velocity;
@@ -235,6 +238,4 @@ void tracker(portTickType* xLastWakeTime)
       servoRight(xLastWakeTime, right>>8, right&0xFF);
       servoSync();
    }
-
-   UARTprintf("Ok compute\n");
 }

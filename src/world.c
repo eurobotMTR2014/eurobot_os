@@ -127,6 +127,7 @@ static void init_state()
 	world.phi = INIT_PHI_1;
 	world.stop = true;
 	world.state_mutex = xSemaphoreCreateMutex();
+	world.update_state_mutex = xSemaphoreCreateMutex();
 
 	world.current_speed.left_speed = INIT_LEFT_SPEED;
 	world.current_speed.right_speed = INIT_RIGHT_SPEED;
@@ -173,7 +174,6 @@ PositionGoal world_peek_next_goal()
 	volatile GoalsBuffer* gb = &(world.goals_buffer);
 	PositionGoal pg;
 	
-	xSemaphoreTake(gb->filled_slot_count, portMAX_DELAY); // waits for data in the buffer
 	xSemaphoreTake(gb->goals_mutex, portMAX_DELAY); // mutex
 	pg = gb->goals[gb->out];
 	xSemaphoreGive(gb->goals_mutex);
@@ -243,6 +243,47 @@ bool world_goal_isfull()
 	return ret;
 }
 
+void world_add_goal(float x, float y, float phi, float k, bool stop)
+{ 
+	/* 
+	UARTprintf("Goal: %d;%d %d/%d\n",(int)x,(int)y,(int)k,stop); 
+	UARTprintf("firstgoal = %d, nextgoals = %d\n", firstgoal, nextgoals); 
+	Objective* d = &goals[nextgoals]; 
+	if (phi == 42) 
+	{ 
+		d->x = x; 
+		d->y = y; 
+		d->phi = phi; 
+		d->k = k; 
+		d->stop = stop; 
+		nextgoals = (nextgoals + 1) % GOALS_POOL; 
+	} 
+	else 
+	{ 
+		d->x = x - 40*(custom_cos(phi)); 
+		d->y = y - 40*(custom_sin(phi)); 
+		d->phi = phi; 
+		d->k = k; 
+		d->stop = false; 
+		nextgoals = (nextgoals + 1) % GOALS_POOL; 
+		d = &goals[nextgoals]; 
+		d->x = x; 
+		d->y = y; 
+		d->phi = phi; 
+		d->k = 25; 
+		d->stop = stop; 
+		nextgoals = (nextgoals + 1) % GOALS_POOL; 
+	} 
+*/ 
+	PositionGoal next; 
+	next.x = x; 
+	next.y = y; 
+	next.phi = phi; 
+	next.k = k; 
+	next.stop = stop; 
+	world_put_goal(next); 
+}
+
 Coord world_get_coord()
 {	
 	Coord c;
@@ -288,6 +329,7 @@ void world_update_encoder(int encoder_id)
 	xSemaphoreTake(world.encoder_mutex, portMAX_DELAY);
 	switch(encoder_id)
 	{
+
 		case ODO_PREV_ENCODER_LEFT : 
 			updateEncoder(&(world.prev_left));
 			world.prev_left.forward = !world.prev_left.forward;
@@ -297,11 +339,13 @@ void world_update_encoder(int encoder_id)
 		case ODO_PREV_ENCODER_RIGHT :
 			updateEncoder(&(world.prev_right));
 			break;
+
 		case ODO_CURR_ENCODER_LEFT :
 			updateEncoder(&(world.curr_left));
 			world.curr_left.forward = !world.curr_left.forward;
 			world.curr_left.tickvalue = 1023 - world.curr_left.tickvalue;
 			break;
+
 		case ODO_CURR_ENCODER_RIGHT :
 			updateEncoder(&(world.curr_right));
 		  	break;
@@ -317,9 +361,11 @@ void world_update_state()
 	copy_encoder(&(world.curr_left), &(world.prev_left));
 	copy_encoder(&(world.curr_right), &(world.prev_right));
 	xSemaphoreGive(world.encoder_mutex);
+
 	// update encoder values
 	world_update_encoder(ODO_CURR_ENCODER_RIGHT);
 	world_update_encoder(ODO_CURR_ENCODER_LEFT);
+
 	// get displacement based on current tickvalues of encoders
 	State ds = getDisplacement(world.curr_right, world.curr_left,
 								world.prev_right, world.prev_left,
