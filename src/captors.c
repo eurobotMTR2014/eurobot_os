@@ -35,6 +35,8 @@ void DELAY_FETCH()
     vTaskDelayUntil (&xLastWakeTime, (DOUBLE_FETCH_DELAY / portTICK_RATE_MS));
 }
 
+static void sharp_to_world();
+static void captors_init();
 extern xQueueHandle screenMsgQueue;
 /*guigui
 extern xSemaphoreHandle usBufSwitchMutex;
@@ -140,8 +142,10 @@ void captorsTask(void* pvParameters)
     portTickType xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
 
+    captors_init();
+
     while (true)
-    {
+    {/*
         // Initial fetch
         fetchBat();
         fetchUS();
@@ -173,6 +177,9 @@ void captorsTask(void* pvParameters)
 
         // Complete cycle (100ms)
         vTaskDelayUntil (&xLastWakeTime, (20 / portTICK_RATE_MS));
+        */
+        sharp_to_world();
+        vTaskDelayUntil (&xLastWakeTime, (30 / portTICK_RATE_MS));
     }
 }
 
@@ -204,6 +211,19 @@ void captorSelect(char capt)
         default:
             return;
     }
+}
+
+void captors_init()
+{
+    GPIOPinWrite(ANALOG_SELECT_HIGH_PIN_BASE, ANALOG_SELECT_HIGH_PIN_NB, PIN_OFF);  // Deux sharps avant
+    GPIOPinWrite(ANALOG_SELECT_LOW_PIN_BASE, ANALOG_SELECT_LOW_PIN_NB, PIN_OFF);
+}
+
+void sharp_to_world()
+{
+    sharpVals[0] = fetchChan0();
+    sharpVals[1] = fetchChan1();
+    world_set_sharp_vals(sharpVals);
 }
 
 unsigned long fetchChannelRAW(unsigned long ch)

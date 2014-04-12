@@ -177,7 +177,7 @@ void tracker(portTickType* xLastWakeTime)
 
    /*
    // Slope
-   /*
+   
    float dg = custom_abs(left_velocity - prev_velocity.left_speed),
          dd = custom_abs(right_velocity - prev_velocity.right_speed);
 

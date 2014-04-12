@@ -391,7 +391,7 @@ void world_set_sharp_vals(unsigned long sharpVals[])
 
 	xSemaphoreGive(world.sharp_mutex);
 
-	UARTprintf("SHARP : %d ; %d\n", world.sharp_vals[0], world.sharp_vals[1]);
+	//UARTprintf("SHARP : %d ; %d\n", world.sharp_vals[0], world.sharp_vals[1]);
 }
 
 // must provide an array of 4 unsigned long
@@ -446,5 +446,5 @@ void world_get_prev_ultra_vals(unsigned long ultraVals[])
 	ultraVals[0] = world.prev_ultra_vals[0];
 	ultraVals[1] = world.prev_ultra_vals[1];
 
-	xSemaphoreGive(world.sharp_mutex);
+	xSemaphoreGive(world.ultra_mutex);
 }
