@@ -36,8 +36,10 @@ typedef struct World_t {
 	Encoder curr_left;
 	xSemaphoreHandle encoder_mutex;
 	
-	unsigned long sharp_vals[/*4*/2]; // sharps measure buffers
-	unsigned long ultra_vals[/*4*/2]; // ultrasound captors measure buffers
+	unsigned long sharp_vals[2]; // sharps measure buffers
+	unsigned long ultra_vals[2]; // ultrasound captors measure buffers
+	unsigned long prev_sharp_vals[2];
+	unsigned long prev_ultra_vals[2];
 	xSemaphoreHandle sharp_mutex;
 	xSemaphoreHandle ultra_mutex;
 
@@ -137,6 +139,10 @@ static void init_captors()
 {
 	world.sharp_mutex = xSemaphoreCreateMutex();
 	world.ultra_mutex = xSemaphoreCreateMutex();
+	world.prev_sharp_vals[0] = 0;
+	world.prev_sharp_vals[1] = 0;
+	world.prev_ultra_vals[0] = 0;
+	world.prev_ultra_vals[1] = 0;
 }
 
 static void copy_goal(volatile PositionGoal* from, volatile PositionGoal* to)
@@ -373,10 +379,10 @@ void world_set_sharp_vals(unsigned long sharpVals[])
 {
 	xSemaphoreTake(world.sharp_mutex, portMAX_DELAY);
 
+	world.prev_sharp_vals[0] = world.sharp_vals[0];
+	world.prev_sharp_vals[1] = world.sharp_vals[1];
 	world.sharp_vals[0] = sharpVals[0];
 	world.sharp_vals[1] = sharpVals[1];
-	//world.sharp_vals[2] = sharpVals[2];
-	//world.sharp_vals[0] = sharpVals[3];
 
 	xSemaphoreGive(world.sharp_mutex);
 
@@ -390,9 +396,17 @@ void world_get_sharp_vals(unsigned long sharpVals[])
 
 	sharpVals[0] = world.sharp_vals[0];
 	sharpVals[1] = world.sharp_vals[1];
-	//sharpVals[2] = world.sharp_vals[2];
-	//sharpVals[0] = world.sharp_vals[3];
-	
+
+	xSemaphoreGive(world.sharp_mutex);
+}
+
+void world_get_prev_sharp_vals(unsigned long sharpVals[])
+{
+	xSemaphoreTake(world.sharp_mutex, portMAX_DELAY);
+
+	sharpVals[0] = world.prev_sharp_vals[0];
+	sharpVals[1] = world.prev_sharp_vals[1];
+
 	xSemaphoreGive(world.sharp_mutex);
 }
 
@@ -400,10 +414,10 @@ void world_set_ultra_vals(unsigned long usVals[])
 {
 	xSemaphoreTake(world.ultra_mutex, portMAX_DELAY);
 
+	world.prev_ultra_vals[0] = world.ultra_vals[0];
+	world.prev_ultra_vals[1] = world.ultra_vals[1];
 	world.ultra_vals[0] = usVals[0];
 	world.ultra_vals[1] = usVals[1];
-	//world.ultra_vals[2] = usVals[2];
-	//world.ultra_vals[0] = usVals[3];
 	
 	xSemaphoreGive(world.ultra_mutex);
 
@@ -416,8 +430,16 @@ void world_get_ultra_vals(unsigned long usVals[])
 
 	usVals[0] = world.ultra_vals[0];
 	usVals[1] = world.ultra_vals[1];
-	//usVals[2] = world.ultra_vals[2];
-	//usVals[0] = world.ultra_vals[3];
 	
 	xSemaphoreGive(world.ultra_mutex);
+}
+
+void world_get_prev_ultra_vals(unsigned long ultraVals[])
+{
+	xSemaphoreTake(world.ultra_mutex, portMAX_DELAY);
+
+	ultraVals[0] = world.prev_ultra_vals[0];
+	ultraVals[1] = world.prev_ultra_vals[1];
+
+	xSemaphoreGive(world.sharp_mutex);
 }

@@ -247,7 +247,7 @@ void launchOLED (void *pvParameters)
 
     // Definining some messages
     char* emptyLine = "";
-    //char* INIT = team_choice? "RED" : "BLUE";
+    char* INIT = ROBOT_team_choice? "RED" : "YELLOW";
     char* fCPU = "CPU:";
     char* percent = "%";
     char* fHeap = "Free Heap:";
@@ -435,7 +435,7 @@ void ROOTtask(void* pvParameters)
     /*
      * Note : Changer checkServoStatus pour intégrer le flap avant les tests!!!!
      */
-    /*
+    
     if (!checkServoStatus(&xLastWakeTime))
     {
         msg = "Error during check";
@@ -445,10 +445,10 @@ void ROOTtask(void* pvParameters)
         while (true)
             vTaskDelayUntil (&xLastWakeTime, (10000 / portTICK_RATE_MS));
     }
-    */
+    
     msg = "Initializing flaps...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
-    //flapInit(&xLastWakeTime);
+    flapInit(&xLastWakeTime);
 
     msg = "Initializing servos...";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
@@ -475,14 +475,15 @@ void ROOTtask(void* pvParameters)
     throwSomeSpears(&xLastWakeTime, 2, 1500);
     robotForward(&xLastWakeTime, 1000);
     */
-    /*    
+    
 
     if (ROBOT_team_choice)
         msg = "We are on RED team";
     else
-        msg = "We are on BLUE team";
+        msg = "We are on YELLOW team";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
+    /*
     if (robot_strategy == STRAT_1)
         msg = "Using GIFTS strategy";
     else
@@ -545,7 +546,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
     bool ok = true;
     char* msg;
     
-    servoCmd(1, INST_PING, 0);
+    servoCmd(2, INST_PING, 0);
     if (!servoCheck(xLastWakeTime))
     {
         ok = false;
@@ -555,7 +556,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
 
-    servoCmd(2, INST_PING, 0);
+    servoCmd(4, INST_PING, 0);
     if (!servoCheck(xLastWakeTime))
     {
         ok = false;
@@ -586,8 +587,8 @@ void flapInit(portTickType* xLastWakeTime)
 {
     flapConfig(xLastWakeTime, 60/*90°*/, 150/*180°*/);
  
-    flapDown(xLastWakeTime);
-    vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
+    //flapDown(xLastWakeTime);
+    //vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
 
     flapUp(xLastWakeTime);
     vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
@@ -625,65 +626,6 @@ void servoInit(portTickType* xLastWakeTime)
     servoSTOP();
 }
 
-void testGiftTask(void* pvParameters)
-{
-    portTickType xLastWakeTime_tmp;
-    xLastWakeTime_tmp = xTaskGetTickCount();
-    portTickType* xLastWakeTime = &xLastWakeTime_tmp;
-
-    flapRightConfig(xLastWakeTime);
-    flapLeftConfig(xLastWakeTime);
-
-    flapRightDown(xLastWakeTime);
-    flapLeftDown(xLastWakeTime);
-
-    int delay = 1000;
-
-    while (true)
-    {
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapRightUp(xLastWakeTime);
-
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapRightDown(xLastWakeTime);
-
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapLeftUp(xLastWakeTime);
-
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapLeftDown(xLastWakeTime);
-    }
-}
-
-void testCandleTask(void* pvParameters)
-{
-    portTickType xLastWakeTime_tmp;
-    xLastWakeTime_tmp = xTaskGetTickCount();
-    portTickType* xLastWakeTime = &xLastWakeTime_tmp;
-
-    flapRightConfig(xLastWakeTime);
-    flapLeftConfig(xLastWakeTime);
-
-    flapRightUp(xLastWakeTime);
-    flapLeftUp(xLastWakeTime);
-
-    int delay = 1000;
-
-    while (true)
-    {
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapRightBall(xLastWakeTime);
-
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapRightUp(xLastWakeTime);
-
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapLeftBall(xLastWakeTime);
-
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapLeftUp(xLastWakeTime);
-    }
-}
 
 void testQEI(void* pvParameters)
 {
@@ -771,7 +713,7 @@ void testADC(void* pvParameters)
 
 void bootmenu(void)
 {
-    RIT128x96x4StringDraw("Mymosh sys - v3.0", 0, LINE_0, 15);
+    RIT128x96x4StringDraw("Insomnia sys - v3.0", 0, LINE_0, 15);
     RIT128x96x4StringDraw("BOOT MENU", 0, LINE_1, 15);
     RIT128x96x4StringDraw("______________", 0, LINE_2, 15);
 
@@ -795,7 +737,6 @@ void bootmenu(void)
                      GPIO_PIN_TYPE_STD_WPU);
 
 
-    /*
 
     RIT128x96x4StringDraw("Which team?", 0, LINE_3, 15);
 
@@ -806,12 +747,12 @@ void bootmenu(void)
         if (ROBOT_team_choice)
         {
             RIT128x96x4StringDraw("-> Red", 0, LINE_5, 15);
-            RIT128x96x4StringDraw("Blue   ", 0, LINE_6, 15);
+            RIT128x96x4StringDraw("Yellow   ", 0, LINE_6, 15);
         }
         else
         {
             RIT128x96x4StringDraw("Red   ", 0, LINE_5, 15);
-            RIT128x96x4StringDraw("-> Blue", 0, LINE_6, 15);
+            RIT128x96x4StringDraw("-> Yellow", 0, LINE_6, 15);
         }
 
         while( GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_4)
@@ -838,6 +779,7 @@ void bootmenu(void)
         // loop
     }
 
+/*
     RIT128x96x4StringDraw("Which strategy?", 0, LINE_3, 15);
 
     while (1)
@@ -871,7 +813,7 @@ void bootmenu(void)
             // loop
         }
     }
-    // */
+    // */ 
 }
 
 void servoLaunchSequence()

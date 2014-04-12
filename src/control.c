@@ -142,7 +142,7 @@ void tracker(portTickType* xLastWakeTime)
 
    //UARTprintf("Current (x;y) = (%d;%d)    Goal (x;y) = (%d;%d)\n", (int) currentstate.x, (int) currentstate.y, (int) goal.x, (int) goal.y);
 
-   ServoSpeed prev_velocity = world_get_servo_speed();
+   //ServoSpeed prev_velocity = world_get_servo_speed();
 
    // has it reached the goal?
    if(custom_sqrt(u1*u1 + u2*u2) <= EPSILON) 
@@ -177,6 +177,7 @@ void tracker(portTickType* xLastWakeTime)
 
    
    // Slope
+   /*
    float dg = custom_abs(left_velocity - prev_velocity.left_speed),
          dd = custom_abs(right_velocity - prev_velocity.right_speed);
 
@@ -189,12 +190,13 @@ void tracker(portTickType* xLastWakeTime)
    {
       right_velocity = prev_velocity.right_speed + DELTA_V_MAX * custom_sign(right_velocity - prev_velocity.right_speed);
    }
-
+   
    /// Update state (speed)
    ServoSpeed update;
    update.left_speed = left_velocity;
    update.right_speed = right_velocity;
    world_set_servo_speed(update);
+   */
 
    //Now let's scale the velocities between [-1, 1]
    if (custom_abs(right_velocity) > custom_abs(left_velocity)) {

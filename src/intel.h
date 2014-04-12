@@ -5,5 +5,10 @@
 
 void intelligenceTask (void* intelligenceTask);
 
+bool acceptableDistance(float distance);
+
+bool isEnemyFront();
+
+bool isEnemyBack();
 
 #endif // INTEL_H_INCLUDED
