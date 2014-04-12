@@ -585,7 +585,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
 void flapInit(portTickType* xLastWakeTime)
 
 {
-    flapConfig(xLastWakeTime, 60/*90°*/, 150/*180°*/);
+    flapConfig(xLastWakeTime, 90/*90°*/, 195/*180°*/);
  
     //flapDown(xLastWakeTime);
     //vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
