@@ -1,7 +1,8 @@
 #include "world.h"
+
 #define POSITION_GOAL_BUF_SIZE  500
-#define INIT_X_1 0
-#define INIT_Y_1 0
+#define INIT_X_1 255 /* A mesurer plus précisément */
+#define INIT_Y_1 1700 /* A déterminer encore ->  2000 - écart/2*/
 #define INIT_PHI_1 0
 
 #define INIT_LEFT_SPEED 0
@@ -35,8 +36,10 @@ typedef struct World_t {
 	Encoder curr_left;
 	xSemaphoreHandle encoder_mutex;
 	
-	unsigned long sharp_vals[4]; // sharps measure buffers
-	unsigned long ultra_vals[4]; // ultrasound captors measure buffers
+	unsigned long sharp_vals[2]; // sharps measure buffers
+	unsigned long ultra_vals[2]; // ultrasound captors measure buffers
+	unsigned long prev_sharp_vals[2];
+	unsigned long prev_ultra_vals[2];
 	xSemaphoreHandle sharp_mutex;
 	xSemaphoreHandle ultra_mutex;
 
@@ -137,6 +140,10 @@ static void init_captors()
 {
 	world.sharp_mutex = xSemaphoreCreateMutex();
 	world.ultra_mutex = xSemaphoreCreateMutex();
+	world.prev_sharp_vals[0] = 0;
+	world.prev_sharp_vals[1] = 0;
+	world.prev_ultra_vals[0] = 0;
+	world.prev_ultra_vals[1] = 0;
 }
 
 static void copy_goal(volatile PositionGoal* from, volatile PositionGoal* to)
@@ -245,36 +252,6 @@ bool world_goal_isfull()
 
 void world_add_goal(float x, float y, float phi, float k, bool stop)
 { 
-	/* 
-	UARTprintf("Goal: %d;%d %d/%d\n",(int)x,(int)y,(int)k,stop); 
-	UARTprintf("firstgoal = %d, nextgoals = %d\n", firstgoal, nextgoals); 
-	Objective* d = &goals[nextgoals]; 
-	if (phi == 42) 
-	{ 
-		d->x = x; 
-		d->y = y; 
-		d->phi = phi; 
-		d->k = k; 
-		d->stop = stop; 
-		nextgoals = (nextgoals + 1) % GOALS_POOL; 
-	} 
-	else 
-	{ 
-		d->x = x - 40*(custom_cos(phi)); 
-		d->y = y - 40*(custom_sin(phi)); 
-		d->phi = phi; 
-		d->k = k; 
-		d->stop = false; 
-		nextgoals = (nextgoals + 1) % GOALS_POOL; 
-		d = &goals[nextgoals]; 
-		d->x = x; 
-		d->y = y; 
-		d->phi = phi; 
-		d->k = 25; 
-		d->stop = stop; 
-		nextgoals = (nextgoals + 1) % GOALS_POOL; 
-	} 
-*/ 
 	PositionGoal next; 
 	next.x = x; 
 	next.y = y; 
@@ -407,12 +384,14 @@ void world_set_sharp_vals(unsigned long sharpVals[])
 {
 	xSemaphoreTake(world.sharp_mutex, portMAX_DELAY);
 
+	world.prev_sharp_vals[0] = world.sharp_vals[0];
+	world.prev_sharp_vals[1] = world.sharp_vals[1];
 	world.sharp_vals[0] = sharpVals[0];
 	world.sharp_vals[1] = sharpVals[1];
-	world.sharp_vals[2] = sharpVals[2];
-	world.sharp_vals[0] = sharpVals[3];
 
 	xSemaphoreGive(world.sharp_mutex);
+
+	UARTprintf("SHARP : %d ; %d\n", world.sharp_vals[0], world.sharp_vals[1]);
 }
 
 // must provide an array of 4 unsigned long
@@ -422,9 +401,17 @@ void world_get_sharp_vals(unsigned long sharpVals[])
 
 	sharpVals[0] = world.sharp_vals[0];
 	sharpVals[1] = world.sharp_vals[1];
-	sharpVals[2] = world.sharp_vals[2];
-	sharpVals[0] = world.sharp_vals[3];
-	
+
+	xSemaphoreGive(world.sharp_mutex);
+}
+
+void world_get_prev_sharp_vals(unsigned long sharpVals[])
+{
+	xSemaphoreTake(world.sharp_mutex, portMAX_DELAY);
+
+	sharpVals[0] = world.prev_sharp_vals[0];
+	sharpVals[1] = world.prev_sharp_vals[1];
+
 	xSemaphoreGive(world.sharp_mutex);
 }
 
@@ -432,12 +419,14 @@ void world_set_ultra_vals(unsigned long usVals[])
 {
 	xSemaphoreTake(world.ultra_mutex, portMAX_DELAY);
 
+	world.prev_ultra_vals[0] = world.ultra_vals[0];
+	world.prev_ultra_vals[1] = world.ultra_vals[1];
 	world.ultra_vals[0] = usVals[0];
 	world.ultra_vals[1] = usVals[1];
-	world.ultra_vals[2] = usVals[2];
-	world.ultra_vals[0] = usVals[3];
 	
 	xSemaphoreGive(world.ultra_mutex);
+
+	//UARTprintf("US : %d ; %d\n", world.ultra_vals[0], world.ultra_vals[1]);
 }
 
 void world_get_ultra_vals(unsigned long usVals[])
@@ -446,8 +435,16 @@ void world_get_ultra_vals(unsigned long usVals[])
 
 	usVals[0] = world.ultra_vals[0];
 	usVals[1] = world.ultra_vals[1];
-	usVals[2] = world.ultra_vals[2];
-	usVals[0] = world.ultra_vals[3];
 	
 	xSemaphoreGive(world.ultra_mutex);
+}
+
+void world_get_prev_ultra_vals(unsigned long ultraVals[])
+{
+	xSemaphoreTake(world.ultra_mutex, portMAX_DELAY);
+
+	ultraVals[0] = world.prev_ultra_vals[0];
+	ultraVals[1] = world.prev_ultra_vals[1];
+
+	xSemaphoreGive(world.sharp_mutex);
 }

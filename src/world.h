@@ -138,6 +138,8 @@ void world_set_sharp_vals(unsigned long sharpVals[]);
  */
 void world_get_sharp_vals(unsigned long sharpVals[]);
 
+void world_get_prev_sharp_vals(unsigned long sharpVals[]);
+
 /**
  * @fn world_set_ultra_vals()
  * Sets the values of the ultrasound captors
@@ -150,5 +152,7 @@ void world_set_ultra_vals(unsigned long usVals[]);
  * Gets the values of the ultrasounds 
  */
 void world_get_ultra_vals(unsigned long usVals[]);
+
+void world_get_prev_ultra_vals(unsigned long ultraVals[]);
 
 #endif

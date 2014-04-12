@@ -60,6 +60,8 @@ void flapLaunchSequence();
 void testQEI(void* pvParameters);
 void testADC(void* pvParameters);
 
+void seeCaptorsTest(void* pvParameters);
+
 int main (void)
 {
     init();
@@ -92,6 +94,7 @@ int main (void)
 
     //xTaskCreate(servoBroadcast, (signed char *) "servoBroadcast", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
     //xTaskCreate(servoCmdLine, (signed char *) "servoCmdLine", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
+    //xTaskCreate(seeCaptorsTest, (signed char *) "seeCaptorsTest", 50, NULL, (tskIDLE_PRIORITY + 4), NULL); 
 
     xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
     xTaskCreate(odometryTask, (signed char*) "odometryTask", 1000, NULL, (tskIDLE_PRIORITY + 4), NULL);
@@ -243,7 +246,7 @@ void launchOLED (void *pvParameters)
 
     // Definining some messages
     char* emptyLine = "";
-    //char* INIT = team_choice? "RED" : "BLUE";
+    char* INIT = ROBOT_team_choice? "RED" : "YELLOW";
     char* fCPU = "CPU:";
     char* percent = "%";
     char* fHeap = "Free Heap:";
@@ -450,10 +453,9 @@ void ROOTtask(void* pvParameters)
         while (true)
             vTaskDelayUntil (&xLastWakeTime, (10000 / portTICK_RATE_MS));
     }
-    UARTprintf("After checkServoStatus\n");
-    
-    //msg = "Initializing flaps...";
-    //xQueueSend(screenMsgQueue, (void*) &msg, 0);
+
+    msg = "Initializing flaps...";
+    xQueueSend(screenMsgQueue, (void*) &msg, 0);
     flapInit(&xLastWakeTime);
 
     //msg = "Initializing servos...";
@@ -481,14 +483,15 @@ void ROOTtask(void* pvParameters)
     throwSomeSpears(&xLastWakeTime, 2, 1500);
     robotForward(&xLastWakeTime, 1000);
     */
-    /*    
+    
 
     if (ROBOT_team_choice)
         msg = "We are on RED team";
     else
-        msg = "We are on BLUE team";
+        msg = "We are on YELLOW team";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
+    /*
     if (robot_strategy == STRAT_1)
         msg = "Using GIFTS strategy";
     else
@@ -554,9 +557,9 @@ bool checkServoStatus(portTickType* xLastWakeTime)
     char* msg = pvPortMalloc(sizeof(char) * 21);
 
     //servoLEDWrite(xLastWakeTime);
-    
-    
+        
     servoCmd(4, INST_PING, 0);
+
     if (!servoCheck(xLastWakeTime))
     {
         ok = false;
@@ -568,6 +571,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
     
     
     servoCmd(2, INST_PING, 0);
+
     if (!servoCheck(xLastWakeTime))
     {
         ok = false;
@@ -626,8 +630,6 @@ void servoInit(portTickType* xLastWakeTime)
     
     robotBackward(xLastWakeTime, 2000);
 
-    
-    vTaskDelayUntil(xLastWakeTime, (1000 / portTICK_RATE_MS));
 }
 
 
@@ -717,7 +719,7 @@ void testADC(void* pvParameters)
 
 void bootmenu(void)
 {
-    RIT128x96x4StringDraw("Mymosh sys - v3.0", 0, LINE_0, 15);
+    RIT128x96x4StringDraw("Insomnia sys - v3.0", 0, LINE_0, 15);
     RIT128x96x4StringDraw("BOOT MENU", 0, LINE_1, 15);
     RIT128x96x4StringDraw("______________", 0, LINE_2, 15);
 
@@ -741,7 +743,6 @@ void bootmenu(void)
                      GPIO_PIN_TYPE_STD_WPU);
 
 
-    /*
 
     RIT128x96x4StringDraw("Which team?", 0, LINE_3, 15);
 
@@ -752,12 +753,12 @@ void bootmenu(void)
         if (ROBOT_team_choice)
         {
             RIT128x96x4StringDraw("-> Red", 0, LINE_5, 15);
-            RIT128x96x4StringDraw("Blue   ", 0, LINE_6, 15);
+            RIT128x96x4StringDraw("Yellow   ", 0, LINE_6, 15);
         }
         else
         {
             RIT128x96x4StringDraw("Red   ", 0, LINE_5, 15);
-            RIT128x96x4StringDraw("-> Blue", 0, LINE_6, 15);
+            RIT128x96x4StringDraw("-> Yellow", 0, LINE_6, 15);
         }
 
         while( GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_4)
@@ -784,6 +785,7 @@ void bootmenu(void)
         // loop
     }
 
+/*
     RIT128x96x4StringDraw("Which strategy?", 0, LINE_3, 15);
 
     while (1)
@@ -817,7 +819,7 @@ void bootmenu(void)
             // loop
         }
     }
-    // */
+    // */ 
 }
 
 void servoLaunchSequence()
@@ -842,6 +844,38 @@ void batteryReport(unsigned long bVolt)
     xQueueSend(batteryVoltQueue, (void*) &bVolt, 0);
 }
 
+void seeCaptorsTest(void* pvParameters)
+{
+    portTickType xLastWakeTime;
+    xLastWakeTime = xTaskGetTickCount();
+
+    unsigned long sharpBuf[2], usBuf[2];
+
+    while(!ROBOT_start){vTaskDelayUntil (&xLastWakeTime, (10 / portTICK_RATE_MS));}
+
+    while(ROBOT_start)
+    {
+        sharpBuf[0] = -1;
+        sharpBuf[1] = -1;
+        usBuf[0] = -1;
+        usBuf[1] = -1;
+
+        world_get_sharp_vals(sharpBuf);
+        world_get_ultra_vals(usBuf);
+
+        UARTprintf("SHARP : \n");
+        for(int i = 0 ; i < 2; i++)
+            UARTprintf("sharp %d : %u | ", i, sharpBuf[i]);
+
+        UARTprintf("\nUS : \n");
+        for(int i = 0; i < 2; i++)
+            UARTprintf("us %d : %u | ", i, usBuf[i]);
+        UARTprintf("\n");
+        vTaskDelayUntil (&xLastWakeTime, (500 / portTICK_RATE_MS));
+    }
+
+    while(1){}
+}
 
 /**  End of main.c  **/
 
