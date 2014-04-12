@@ -44,6 +44,8 @@ void idleStat       (void* pvParameters);
 void blinky         (void* pvParameters);
 void launchOLED     (void* pvParameters);
 
+void LEDtestTask(void* pvParameters);
+
 void ROOTtask       (void* pvParameters);
 bool checkServoStatus(portTickType* xLastWakeTime);
 void flapInit(portTickType* xLastWakeTime);
@@ -55,8 +57,6 @@ void servoCmdLine   (void* pvParameters);
 void servoLaunchSequence();
 void flapLaunchSequence();
 
-void testGiftTask(void* pvParameters);
-void testCandleTask(void* pvParameters);
 void testQEI(void* pvParameters);
 void testADC(void* pvParameters);
 
@@ -65,7 +65,6 @@ int main (void)
     init();
     pln("Initialization over");
 
-    //servoLEDWrite();
     servoLaunchSequence();
     //flapLaunchSequence();
 
@@ -95,10 +94,10 @@ int main (void)
     //xTaskCreate(servoCmdLine, (signed char *) "servoCmdLine", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
 
     xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
-    //xTaskCreate(odometryTask, (signed char*) "odometryTask", 1000, NULL, (tskIDLE_PRIORITY + 4), NULL);
-    xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
-    //xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
-    //xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    xTaskCreate(odometryTask, (signed char*) "odometryTask", 1000, NULL, (tskIDLE_PRIORITY + 4), NULL);
+    //xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
+    xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
 
     pln("Launching scheduler");
     vTaskStartScheduler();
@@ -190,7 +189,7 @@ void init()
     GPIOPinTypeUART(GPIO_PORTD_BASE, GPIO_PIN_2 | GPIO_PIN_3);
 
     // ATTENTION : 200000 -> 115200
-    UARTConfigSetExpClk(UART1_BASE, SysCtlClockGet(), 115200,
+    UARTConfigSetExpClk(UART1_BASE, SysCtlClockGet(), 200000,
                             (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
 
     UARTEnable(UART1_BASE);
@@ -200,7 +199,7 @@ void init()
     SysCtlPeripheralEnable(SYSCTL_PERIPH_UART2);
     GPIOPinTypeUART(GPIO_PORTG_BASE, GPIO_PIN_0 | GPIO_PIN_1);
 
-    UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), 115200,
+    UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), 200000,
                             (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE)); // 8bit, stop1, no parity
 
     UARTEnable(UART2_BASE);
@@ -353,7 +352,7 @@ void launchOLED (void *pvParameters)
                 buf[i] = buf[i+1];
 
             buf[SCREENBUFSIZ-1] = tmp_msg;
-            //m_strcpy(tmp_msg, buf[SCREENBUFSIZ-1]);
+            //m_srcpy(tmp_msg, buf[SCREENBUFSIZ-1]);
             newItem = 1;
         }
 
@@ -418,21 +417,30 @@ void idleTask(void* pvParameters)
 
 void ROOTtask(void* pvParameters)
 {
+    
     portTickType xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
+    
 
+    //servoLEDWrite(&xLastWakeTime);
+
+    UARTprintf("Before malloc\n");
     char* msg = pvPortMalloc(sizeof(char) * 21);
 
     msg = "Checking servo status";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
-    //servoRespond(&xLastWakeTime, 2);
-    //servoRespond(&xLastWakeTime, 1);
+    UARTprintf("After sedn\n");
+
+    
+    //servoSetRespond(&xLastWakeTime, 2, 2);
+    //servoSetRespond(&xLastWakeTime, 4, 2);
+    
 
     /*
      * Note : Changer checkServoStatus pour intégrer le flap avant les tests!!!!
      */
-    /*
+    
     if (!checkServoStatus(&xLastWakeTime))
     {
         msg = "Error during check";
@@ -442,18 +450,19 @@ void ROOTtask(void* pvParameters)
         while (true)
             vTaskDelayUntil (&xLastWakeTime, (10000 / portTICK_RATE_MS));
     }
-    */
-    msg = "Initializing flaps...";
-    xQueueSend(screenMsgQueue, (void*) &msg, 0);
+    UARTprintf("After checkServoStatus\n");
+    
+    //msg = "Initializing flaps...";
+    //xQueueSend(screenMsgQueue, (void*) &msg, 0);
     //flapInit(&xLastWakeTime);
 
-    msg = "Initializing servos...";
-    xQueueSend(screenMsgQueue, (void*) &msg, 0);
+    //msg = "Initializing servos...";
+    //xQueueSend(screenMsgQueue, (void*) &msg, 0);
     //servoInit(&xLastWakeTime);
 
 
     vTaskDelayUntil (&xLastWakeTime, (200 / portTICK_RATE_MS));
-
+    
     // Throw a ball
     /*
     msg = "FIRE...";
@@ -503,10 +512,12 @@ void ROOTtask(void* pvParameters)
     
     seedRandomGen();
 
-    
+
 */
+
     vTaskDelayUntil (&xLastWakeTime, (1000 / portTICK_RATE_MS));
     ROBOT_start = true; // Go!
+    UARTprintf("ROBOT_start = true\n");
 
     msg = "Playing!";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
@@ -533,25 +544,29 @@ void ROOTtask(void* pvParameters)
         servoSTOP();
         flapSTOP();
     } // Game over
-    
-    while(true){}
 }
 
 bool checkServoStatus(portTickType* xLastWakeTime)
 {
+    UARTprintf("checkServoStatus\n");
     bool ok = true;
-    char* msg;
+
+    char* msg = pvPortMalloc(sizeof(char) * 21);
+
+    //servoLEDWrite(xLastWakeTime);
     
-    servoCmd(1, INST_PING, 0);
+    
+    servoCmd(4, INST_PING, 0);
     if (!servoCheck(xLastWakeTime))
     {
         ok = false;
-        pln2("Servo 1 error");
+        pln2("Servo 4 error");
 
-        msg = "Servo 1 PAS OK!";
+        msg = "Servo 4 PAS OK!";
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
-
+    
+    
     servoCmd(2, INST_PING, 0);
     if (!servoCheck(xLastWakeTime))
     {
@@ -561,8 +576,7 @@ bool checkServoStatus(portTickType* xLastWakeTime)
         msg = "Servo 2 PAS OK!";
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
-    
-    
+
     /*
     flapCmdUnchecked(3, INST_PING, 0);
 
@@ -574,7 +588,9 @@ bool checkServoStatus(portTickType* xLastWakeTime)
         xQueueSend(screenMsgQueue, (void*) &msg, 0);
     }
     */
-    
+
+    UARTprintf("checkServoStatus end\n");
+
     return ok;
 }
 
@@ -598,12 +614,7 @@ void servoInit(portTickType* xLastWakeTime)
     msg = "FORWARD";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
-    servoSetSpeed(xLastWakeTime, 2, -0.5);
-    servoSetSpeed(xLastWakeTime, 1, 0.5);
-    servoSync();
-
-    vTaskDelayUntil (xLastWakeTime, (2000 / portTICK_RATE_MS));
-    servoSTOP();
+    robotForward(xLastWakeTime, 2000);
 
     msg = "WAIT";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
@@ -613,74 +624,12 @@ void servoInit(portTickType* xLastWakeTime)
     msg = "BACKWARD";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
     
-    servoSetSpeed(xLastWakeTime, 1, -0.5);
-    servoSetSpeed(xLastWakeTime, 2, 0.5);
-    servoSync();
+    robotBackward(xLastWakeTime, 2000);
+
     
-    vTaskDelayUntil(xLastWakeTime, (2000 / portTICK_RATE_MS));
-
-    servoSTOP();
+    vTaskDelayUntil(xLastWakeTime, (1000 / portTICK_RATE_MS));
 }
 
-void testGiftTask(void* pvParameters)
-{
-    portTickType xLastWakeTime_tmp;
-    xLastWakeTime_tmp = xTaskGetTickCount();
-    portTickType* xLastWakeTime = &xLastWakeTime_tmp;
-
-    flapRightConfig(xLastWakeTime);
-    flapLeftConfig(xLastWakeTime);
-
-    flapRightDown(xLastWakeTime);
-    flapLeftDown(xLastWakeTime);
-
-    int delay = 1000;
-
-    while (true)
-    {
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapRightUp(xLastWakeTime);
-
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapRightDown(xLastWakeTime);
-
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapLeftUp(xLastWakeTime);
-
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapLeftDown(xLastWakeTime);
-    }
-}
-
-void testCandleTask(void* pvParameters)
-{
-    portTickType xLastWakeTime_tmp;
-    xLastWakeTime_tmp = xTaskGetTickCount();
-    portTickType* xLastWakeTime = &xLastWakeTime_tmp;
-
-    flapRightConfig(xLastWakeTime);
-    flapLeftConfig(xLastWakeTime);
-
-    flapRightUp(xLastWakeTime);
-    flapLeftUp(xLastWakeTime);
-
-    int delay = 1000;
-
-    while (true)
-    {
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapRightBall(xLastWakeTime);
-
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapRightUp(xLastWakeTime);
-
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapLeftBall(xLastWakeTime);
-
-        vTaskDelayUntil (xLastWakeTime, (delay / portTICK_RATE_MS));
-        flapLeftUp(xLastWakeTime);
-    }
-}
 
 void testQEI(void* pvParameters)
 {
@@ -892,7 +841,6 @@ void batteryReport(unsigned long bVolt)
 {
     xQueueSend(batteryVoltQueue, (void*) &bVolt, 0);
 }
-
 
 
 /**  End of main.c  **/
