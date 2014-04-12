@@ -454,7 +454,7 @@ void ROOTtask(void* pvParameters)
     
     //msg = "Initializing flaps...";
     //xQueueSend(screenMsgQueue, (void*) &msg, 0);
-    //flapInit(&xLastWakeTime);
+    flapInit(&xLastWakeTime);
 
     //msg = "Initializing servos...";
     //xQueueSend(screenMsgQueue, (void*) &msg, 0);
@@ -597,10 +597,10 @@ bool checkServoStatus(portTickType* xLastWakeTime)
 void flapInit(portTickType* xLastWakeTime)
 
 {
-    flapConfig(xLastWakeTime, 60/*90°*/, 150/*180°*/);
+    flapConfig(xLastWakeTime, 90/*90°*/, 195/*180°*/);
  
-    flapDown(xLastWakeTime);
-    vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
+    //flapDown(xLastWakeTime);
+    //vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
 
     flapUp(xLastWakeTime);
     vTaskDelayUntil (xLastWakeTime, (500 / portTICK_RATE_MS));
