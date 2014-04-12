@@ -10,10 +10,8 @@
 #define ADC_SAMPLE_SEQ_1 1
 #define ADC_SAMPLE_SEQ_2 2
 
-#define CAPTOR_US_FRONT 1
-#define CAPTOR_US_BACK 2
-#define CAPTOR_SHARP_FRONT 3
-#define CAPTOR_SHARP_BACK 4
+#define CAPTOR_SHARPS 1
+#define CAPTOR_US 2
 
 /**
  * @fn DELAY_SWITCH
@@ -60,13 +58,13 @@ unsigned long* sharpValsBuf2 = sharpValsBuf2Init;
 unsigned long* ultraVals = ultraValsBuf1Init;
 */
 
-unsigned long ultraVals[4]; //guigui
-unsigned long sharpVals[4]; //guigui
+unsigned long ultraVals[2]; //guigui
+unsigned long sharpVals[2]; //guigui
 
 unsigned long ultraValsMed1[5];
 unsigned long ultraValsMed2[5];
-unsigned long ultraValsMed3[5];
-unsigned long ultraValsMed4[5];
+//unsigned long ultraValsMed3[5];
+//unsigned long ultraValsMed4[5];
 unsigned char ultraCount = 0;
 //guigui unsigned long* sharpVals = sharpValsBuf1Init;
 
@@ -146,10 +144,9 @@ void captorsTask(void* pvParameters)
     {
         // Initial fetch
         fetchBat();
-
         fetchUS();
-        DELAY_SWITCH();
 
+        DELAY_SWITCH();
         fetchSharp();
         sharpNewValue();
 
@@ -183,16 +180,16 @@ void captorSelect(char capt)
 {
     switch (capt)
     {
-        case CAPTOR_US_FRONT:
-            GPIOPinWrite(ANALOG_SELECT_HIGH_PIN_BASE, ANALOG_SELECT_HIGH_PIN_NB, PIN_OFF);  // Ultrasons avant
+        case CAPTOR_SHARPS:
+            GPIOPinWrite(ANALOG_SELECT_HIGH_PIN_BASE, ANALOG_SELECT_HIGH_PIN_NB, PIN_OFF);  // Deux sharps avant
             GPIOPinWrite(ANALOG_SELECT_LOW_PIN_BASE, ANALOG_SELECT_LOW_PIN_NB, PIN_OFF);
             return;
 
-        case CAPTOR_US_BACK:
-            GPIOPinWrite(ANALOG_SELECT_HIGH_PIN_BASE, ANALOG_SELECT_HIGH_PIN_NB, PIN_OFF);  // Ultrasons arrière
+        case CAPTOR_US:
+            GPIOPinWrite(ANALOG_SELECT_HIGH_PIN_BASE, ANALOG_SELECT_HIGH_PIN_NB, PIN_OFF);  // Ultrasons 
             GPIOPinWrite(ANALOG_SELECT_LOW_PIN_BASE, ANALOG_SELECT_LOW_PIN_NB, PIN_ON);
             return;
-
+        /*
         case CAPTOR_SHARP_FRONT:
             GPIOPinWrite(ANALOG_SELECT_HIGH_PIN_BASE, ANALOG_SELECT_HIGH_PIN_NB, PIN_ON);   // Sharps avant
             GPIOPinWrite(ANALOG_SELECT_LOW_PIN_BASE, ANALOG_SELECT_LOW_PIN_NB, PIN_OFF);
@@ -202,6 +199,7 @@ void captorSelect(char capt)
             GPIOPinWrite(ANALOG_SELECT_HIGH_PIN_BASE, ANALOG_SELECT_HIGH_PIN_NB, PIN_ON);   // Sharps arrière
             GPIOPinWrite(ANALOG_SELECT_LOW_PIN_BASE, ANALOG_SELECT_LOW_PIN_NB, PIN_ON);
             return;
+        */
 
         default:
             return;
@@ -224,19 +222,15 @@ unsigned long fetchChannelRAW(unsigned long ch)
 
 void fetchSharp()
 {
-    captorSelect(CAPTOR_SHARP_FRONT); // Sharp avant
+    captorSelect(CAPTOR_SHARPS); // Sharps
     DELAY_SWITCH();
     sharpVals[0] = fetchChan0();
     sharpVals[1] = fetchChan1();
-    captorSelect(CAPTOR_SHARP_BACK); // Sharp arrière
-    DELAY_SWITCH();
-    sharpVals[2] = fetchChan0();
-    sharpVals[3] = fetchChan1();
 }
 
 void fetchUS()
 {
-    captorSelect(CAPTOR_US_FRONT); // US avant
+    captorSelect(CAPTOR_US); // US avant
     DELAY_SWITCH();
 //    ultraVals[0] += fetchChan0();
 //    ultraVals[1] += fetchChan1();
@@ -245,16 +239,8 @@ void fetchUS()
     ultraValsMed2[ultraCount] = fetchChan1();
     ultraVals[1] += ultraValsMed2[ultraCount];
 
-    captorSelect(CAPTOR_US_BACK); // US arrière
-    DELAY_SWITCH();
-    ultraValsMed3[ultraCount] = fetchChan0();
-    ultraVals[2] += ultraValsMed3[ultraCount];
-    ultraValsMed4[ultraCount] = fetchChan1();
-    ultraVals[3] += ultraValsMed4[ultraCount];
-    //ultraValsMed3[ultraCount] = fetchChan1();
-
     ultraCount++;
-    if (ultraCount == 5){
+    if (ultraCount == 5){ // 5 mesures
         ultraCount = 0;
     }
 }
@@ -315,15 +301,12 @@ void USNewValue(char count)
    stackOverflowSort(ultraValsMed1, count);
 //   UARTprintf("UltraValsMed[0] = %d   \t[1] = %d \t [2] = %d \t [3] = %d \t [4] = %d\n", ultraValsMed1[0], ultraValsMed1[1], ultraValsMed1[2], ultraValsMed1[3], ultraValsMed1[4]);
    stackOverflowSort(ultraValsMed2, count);
-   stackOverflowSort(ultraValsMed3, count);
 
 //    ultraVals[0] = ultraValsMed1[2];
 //    ultraVals[1] = ultraValsMed2[2];
 //    ultraVals[2] = ultraValsMed3[2];
     ultraVals[0] /= count;
     ultraVals[1] /= count;
-    ultraVals[2] /= count;
-    ultraVals[3] /= count;
 
 //    UARTprintf("Average values[0] = %d   \t[1] = %d \t [2] = %d \t [3] = %d\n", ultraVals[0], ultraVals[1], ultraVals[2], ultraVals[3]);
 //    UARTprintf("Median values[0] = %d   \t[1] = %d \t [2] = %d \t [3] = %d\n", ultraValsMed1[2], ultraValsMed2[2], ultraValsMed3[2], ultraVals[3]);
@@ -339,6 +322,5 @@ void USNewValue(char count)
 
     ultraVals[0] = 0;
     ultraVals[1] = 0;
-    ultraVals[2] = 0;
-    ultraVals[3] = 0;
+
 }

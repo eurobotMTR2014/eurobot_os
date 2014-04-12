@@ -95,13 +95,13 @@ int main (void)
 
     //xTaskCreate(servoBroadcast, (signed char *) "servoBroadcast", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
     //xTaskCreate(servoCmdLine, (signed char *) "servoCmdLine", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
-    xTaskCreate(seeCaptorsTest, (signed char *) "seeCaptorsTest", 50, NULL, (tskIDLE_PRIORITY + 4), NULL); 
+    //xTaskCreate(seeCaptorsTest, (signed char *) "seeCaptorsTest", 50, NULL, (tskIDLE_PRIORITY + 4), NULL); 
 
     xTaskCreate(ROOTtask, (signed char *) "ROOTtask", 100, NULL, (tskIDLE_PRIORITY + 6), NULL);
-    //xTaskCreate(odometryTask, (signed char*) "odometryTask", 1000, NULL, (tskIDLE_PRIORITY + 4), NULL);
-    xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
-    //xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
-    //xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    xTaskCreate(odometryTask, (signed char*) "odometryTask", 1000, NULL, (tskIDLE_PRIORITY + 4), NULL);
+    //xTaskCreate(captorsTask, (signed char *) "captorsTask", 100, NULL, (tskIDLE_PRIORITY + 5), NULL);
+    xTaskCreate(controlTask, (signed char *) "controlTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
+    xTaskCreate(intelligenceTask, (signed char *) "intelligenceTask", 1000, NULL, (tskIDLE_PRIORITY + 3), NULL);
 
     pln("Launching scheduler");
     vTaskStartScheduler();
@@ -898,21 +898,29 @@ void batteryReport(unsigned long bVolt)
 
 void seeCaptorsTest(void* pvParameters)
 {
-    unsigned long sharpBuf[4], usBuf[4];
+    portTickType xLastWakeTime;
+    xLastWakeTime = xTaskGetTickCount();
+
+    unsigned long sharpBuf[2], usBuf[2];
+
+    while(!ROBOT_start){vTaskDelayUntil (&xLastWakeTime, (10 / portTICK_RATE_MS));}
 
     while(ROBOT_start)
     {
-        sharpBuf = {-1,-1,-1,-1};
-        usBuf = {-1,-1,-1,-1};
+        sharpBuf[0] = -1;
+        sharpBuf[1] = -1;
+        usBuf[0] = -1;
+        usBuf[1] = -1;
+
         world_get_sharp_vals(sharpBuf);
         world_get_ultra_vals(usBuf);
 
         UARTprintf("SHARP : \n");
-        for(int i = 0: i < 4; i++)
+        for(int i = 0 ; i < 2; i++)
             UARTprintf("sharp %d : %u | ", i, sharpBuf[i]);
 
         UARTprintf("\nUS : \n");
-        for(int i = 0; i < 4; i++)
+        for(int i = 0; i < 2; i++)
             UARTprintf("us %d : %u | ", i, usBuf[i]);
         UARTprintf("\n");
         vTaskDelayUntil (&xLastWakeTime, (500 / portTICK_RATE_MS));

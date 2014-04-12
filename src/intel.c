@@ -37,6 +37,7 @@ void intelligenceTask (void* pvParameters)
     msg = "ctrl_setNextGoalState";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
 
+    /*
     world_add_goal(500, 0, 42, 42, false);
     world_add_goal(1000, 0, 42, 42, false);
     world_add_goal(1200, 0, 42, 42, false);
@@ -54,7 +55,17 @@ void intelligenceTask (void* pvParameters)
     world_add_goal(0, 500, 42, 42, false);
     world_add_goal(0, 0, 42, 42, true);
     ctrl_restart(&xLastWakeTime);
+    */
 //    int i = 0;
+
+    // First hardcoding
+
+    world_add_goal(400, 1500, 42, 42, false);
+    world_add_goal(500, 1400, 42, 42, false);
+    world_add_goal(750, 1400, 42, 42, false);
+
+    world_add_goal(2250, 1400, 42, 42, true);
+
 
     msg = "Begin loop";
     xQueueSend(screenMsgQueue, (void*) &msg, 0);
